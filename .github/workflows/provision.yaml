@@ -1,0 +1,52 @@
+name: provision
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ${{ github.repository }}-swarm-deploy
+  cancel-in-progress: false
+
+env:
+  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+  SSH_USER: ${{ secrets.SSH_USER }}
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SWARM_ADVERTISE_ADDR: ${{ vars.SWARM_ADVERTISE_ADDR }}
+  CNAME: ${{ vars.CNAME }}
+  PROJECT: ${{ vars.PROJECT }}
+  DEPLOY_PHASE: provision
+  CF_DNS_API_TOKEN: ${{ secrets.CF_DNS_API_TOKEN }}
+  ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+  REDIS_ARGS: ${{ secrets.REDIS_ARGS }}
+
+jobs:
+  provision:
+    name: Edge + data stacks (no app images)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            .devops
+
+      - name: Setup SSH and deploy stacks
+        run: |
+          set -euo pipefail
+          ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
+          ssh-add - <<< "${{ secrets.SSH_KEY }}"
+          mkdir -p ~/.ssh
+          {
+            echo "HOST *"
+            echo "StrictHostKeyChecking no"
+          } > ~/.ssh/config
+
+          bash ./.devops/deploy-swarm.sh

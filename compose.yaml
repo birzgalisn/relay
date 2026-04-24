@@ -1,0 +1,145 @@
+name: ${PROJECT}
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  internal:
+  proxy:
+    external: true
+    name: relay_edge
+
+services:
+  postgres:
+    profiles: [ dev, preview ]
+    image: postgres:18.3-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGDATA=/var/lib/postgresql
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - internal
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    profiles: [ dev, preview ]
+    image: redis:8.6-alpine
+    environment:
+      - REDIS_ARGS=${REDIS_ARGS}
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  deps: &dev_node
+    profiles: [ dev ]
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    image: relay-dev:latest
+    user: ${HOST_UID:-1000}:${HOST_GID:-1000}
+    env_file:
+      - .env.local
+    environment:
+      - HOME=/app/.pnpm-home
+      - CI=true
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: pnpm install
+    networks:
+      - internal
+
+  turbo:
+    <<: *dev_node
+    profiles: [ dev ]
+    command: pnpm run dev
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT}-api.rule=Host(`api.${CNAME}`)
+      - traefik.http.routers.${PROJECT}-api.entrypoints=http
+      - traefik.http.routers.${PROJECT}-api.service=${PROJECT}-api
+      - traefik.http.services.${PROJECT}-api.loadbalancer.server.port=3000
+      - traefik.http.routers.${PROJECT}-web.rule=Host(`app.${CNAME}`)
+      - traefik.http.routers.${PROJECT}-web.entrypoints=http
+      - traefik.http.routers.${PROJECT}-web.service=${PROJECT}-web
+      - traefik.http.services.${PROJECT}-web.loadbalancer.server.port=4000
+      - traefik.http.routers.${PROJECT}-studio.rule=Host(`studio.${CNAME}`)
+      - traefik.http.routers.${PROJECT}-studio.entrypoints=http
+      - traefik.http.routers.${PROJECT}-studio.service=${PROJECT}-studio
+      - traefik.http.services.${PROJECT}-studio.loadbalancer.server.port=5555
+    networks:
+      - internal
+      - proxy
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
+      deps:
+        condition: service_completed_successfully
+
+  api:
+    profiles: [ preview ]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT}-api.rule=Host(`api.${CNAME}`)
+      - traefik.http.routers.${PROJECT}-api.entrypoints=http
+      - traefik.http.routers.${PROJECT}-api.service=${PROJECT}-api
+      - traefik.http.services.${PROJECT}-api.loadbalancer.server.port=3000
+    networks:
+      - internal
+      - proxy
+    healthcheck:
+      test: [ 'CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:3000/up' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    profiles: [ preview ]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT}-web.rule=Host(`app.${CNAME}`)
+      - traefik.http.routers.${PROJECT}-web.entrypoints=http
+      - traefik.http.routers.${PROJECT}-web.service=${PROJECT}-web
+      - traefik.http.services.${PROJECT}-web.loadbalancer.server.port=80
+    networks:
+      - proxy
+    healthcheck:
+      test: [ 'CMD', 'wget', '-q', '--spider', 'http://127.0.0.1/up' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      api:
+        condition: service_healthy

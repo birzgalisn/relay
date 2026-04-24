@@ -1,0 +1,191 @@
+name: ci
+
+on:
+  workflow_call:
+    inputs:
+      app:
+        description: App to build
+        required: true
+        type: string
+      platforms:
+        description: Platforms to build
+        required: false
+        type: string
+        default: "['linux/amd64']"
+      build-args:
+        description: Docker build args
+        required: false
+        type: string
+        default: ''
+    outputs:
+      image_root:
+        description: Lowercase ghcr.io/owner/repo (image name is root-app)
+        value: ${{ jobs.merge.outputs.image_root }}
+      image_tag:
+        description: Tag applied on push (branch name)
+        value: ${{ jobs.merge.outputs.image_tag }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        platform: ${{ fromJson(inputs.platforms) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Image root
+        id: image_root
+        run: |
+          set -euo pipefail
+          echo "value=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ steps.image_root.outputs.value }}-${{ inputs.app }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: ${{ matrix.platform }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Normalize
+        id: normalize
+        run: |
+          set -euo pipefail
+          echo "platform=$(echo ${{ matrix.platform }} | sed 's/\//-/g')" >> $GITHUB_OUTPUT
+
+      - name: Cache Docker layers
+        uses: actions/cache@v5
+        with:
+          path: |
+            /tmp/.buildx-cache
+          key: |
+            ${{ runner.os }}-${{ steps.normalize.outputs.platform }}-${{ inputs.app }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.normalize.outputs.platform }}-${{ inputs.app }}-
+            ${{ runner.os }}-${{ steps.normalize.outputs.platform }}-
+            ${{ runner.os }}-
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/${{ inputs.app }}/Dockerfile
+          build-args: ${{ inputs.build-args }}
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: |
+            type=image,name=${{ steps.image_root.outputs.value }}-${{ inputs.app }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      - name: Export digest
+        run: |
+          DIGEST=${{ steps.build.outputs.digest }}
+          DIGEST_DIR=/tmp/digests/${{ inputs.app }}
+          mkdir -p $DIGEST_DIR
+          touch "$DIGEST_DIR/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ steps.normalize.outputs.platform }}-${{ inputs.app }}
+          path: /tmp/digests/${{ inputs.app }}
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  merge:
+    name: Push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs:
+      - build
+
+    outputs:
+      image_root: ${{ steps.image_root.outputs.value }}
+      image_tag: ${{ steps.tag.outputs.value }}
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v8
+        with:
+          pattern: digests-*-${{ inputs.app }}
+          path: /tmp/digests/${{ inputs.app }}
+          merge-multiple: true
+
+      - name: Image root
+        id: image_root
+        run: |
+          set -euo pipefail
+          echo "value=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ steps.image_root.outputs.value }}-${{ inputs.app }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digests/${{ inputs.app }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ steps.image_root.outputs.value }}-${{ inputs.app }}@sha256:%s ' *)
+
+      - name: Inspect image
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect ${{ steps.image_root.outputs.value }}-${{ inputs.app }}:${{ github.ref_name }}
+
+      - name: Record deploy tag
+        id: tag
+        run: |
+          set -euo pipefail
+          echo "value=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT

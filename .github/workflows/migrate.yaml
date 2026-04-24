@@ -1,0 +1,92 @@
+name: migrate
+
+on:
+  workflow_call:
+    secrets:
+      POSTGRES_USER:
+        required: true
+      POSTGRES_PASSWORD:
+        required: true
+      POSTGRES_HOST:
+        required: true
+      POSTGRES_DB:
+        required: true
+      HETZNER_TOKEN:
+        required: false
+      HETZNER_FW_ID:
+        required: false
+      HETZNER_HOST_ID:
+        required: false
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:5432/${{ secrets.POSTGRES_DB }}
+
+jobs:
+  migrate:
+    name: Migrate database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            package.json
+            pnpm-lock.yaml
+            pnpm-workspace.yaml
+            packages/prisma
+            packages/typescript-config
+            packages/oxlint-config
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Detect Hetzner firewall credentials
+        id: hetzner
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+          HETZNER_FW_ID: ${{ secrets.HETZNER_FW_ID }}
+          HETZNER_HOST_ID: ${{ secrets.HETZNER_HOST_ID }}
+        run: |
+          if [ -n "${HETZNER_TOKEN:-}" ] && [ -n "${HETZNER_FW_ID:-}" ] && [ -n "${HETZNER_HOST_ID:-}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Allow database access (attach Hetzner firewall)
+        if: steps.hetzner.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.HETZNER_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"apply_to":[{"server":{"id":${{ secrets.HETZNER_HOST_ID }}},"type":"server"}]}' \
+            "https://api.hetzner.cloud/v1/firewalls/${{ secrets.HETZNER_FW_ID }}/actions/apply_to_resources"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter=@repo/prisma run generate
+
+      - name: Run database migrations
+        run: pnpm --filter=@repo/prisma run db:deploy
+
+      - name: Disallow database access (detach Hetzner firewall)
+        if: always() && steps.hetzner.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.HETZNER_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"remove_from":[{"server":{"id":${{ secrets.HETZNER_HOST_ID }}},"type":"server"}]}' \
+            "https://api.hetzner.cloud/v1/firewalls/${{ secrets.HETZNER_FW_ID }}/actions/remove_from_resources"

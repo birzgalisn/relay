@@ -1,0 +1,47 @@
+{
+  "name": "@repo/prisma",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./lib/seed/run": {
+      "types": "./dist/lib/seed/run.d.ts",
+      "require": "./dist/lib/seed/run.js",
+      "default": "./dist/lib/seed/run.js"
+    }
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "pnpm run generate && tsdown",
+    "clean": "rm -r .turbo dist node_modules",
+    "dev": "pnpm run db:studio",
+    "lint": "oxlint .",
+    "db:migrate": "prisma migrate dev",
+    "db:check": "prisma migrate status",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "pnpm run build && pnpm run db:seed:run",
+    "db:seed:run": "prisma db seed",
+    "db:prepare": "pnpm run build && pnpm run db:deploy && pnpm run db:seed:run",
+    "db:studio": "prisma studio --port 5555 --browser none"
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@prisma/adapter-pg": "catalog:",
+    "@prisma/client": "catalog:",
+    "dotenv": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/oxlint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "oxlint": "catalog:",
+    "prisma": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

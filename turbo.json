@@ -1,0 +1,37 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL"],
+  "tasks": {
+    "dev": {
+      "dependsOn": ["@repo/prisma#db:prepare"],
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "lint": {},
+    "test": {},
+    "test:e2e": {},
+    "db:migrate": {
+      "cache": false
+    },
+    "db:check": {
+      "cache": false
+    },
+    "db:deploy": {
+      "cache": false
+    },
+    "db:prepare": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    }
+  }
+}

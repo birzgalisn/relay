@@ -1,0 +1,53 @@
+name: api
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - apps/api/**
+      - packages/api/**
+      - packages/prisma/**
+      - apps/api/Dockerfile
+      - .devops/stack-data.yaml
+      - .devops/stack-edge.yaml
+      - .devops/stack-api.yaml
+      - .devops/stack-web.yaml
+      - .devops/deploy-swarm.sh
+      - .github/workflows/migrate.yaml
+      - .github/workflows/api.yaml
+      - .github/workflows/ci.yaml
+      - .github/workflows/cd.yaml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    name: Build and push image
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/ci.yaml
+    with:
+      app: api
+
+  deploy:
+    name: Deploy
+    needs: build-push
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/cd.yaml
+    with:
+      app: api
+      image_root: ${{ needs.build-push.outputs.image_root }}
+      image_tag: ${{ needs.build-push.outputs.image_tag }}
+    secrets: inherit

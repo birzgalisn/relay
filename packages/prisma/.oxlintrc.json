@@ -1,0 +1,4 @@
+{
+  "extends": ["@repo/oxlint-config/library"],
+  "ignorePatterns": ["src/_generated/**"]
+}

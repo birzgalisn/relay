@@ -1,0 +1,9 @@
+.git
+.turbo
+out
+**/node_modules
+**/dist
+**/migrations
+**/.next
+**/*.log
+.env*

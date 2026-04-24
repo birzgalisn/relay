@@ -1,0 +1,53 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "dev": "nest start --watch",
+    "dev:debug": "nest start --debug --watch",
+    "build": "tsdown",
+    "clean": "rm -r dist node_modules tsconfig.tsbuildinfo",
+    "start": "node dist/main.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "lint": "oxlint ."
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@repo/api": "workspace:*",
+    "@repo/prisma": "workspace:*",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:"
+  },
+  "devDependencies": {
+    "@jest/globals": "catalog:",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@nestjs/cli": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "@nestjs/testing": "catalog:",
+    "@repo/oxlint-config": "workspace:*",
+    "@repo/jest-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "@types/supertest": "catalog:",
+    "jest": "catalog:",
+    "source-map-support": "catalog:",
+    "supertest": "catalog:",
+    "ts-jest": "catalog:",
+    "ts-loader": "catalog:",
+    "ts-node": "catalog:",
+    "tsconfig-paths": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}
