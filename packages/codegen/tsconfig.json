@@ -1,0 +1,11 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "strictNullChecks": true,
+    "types": ["node"]
+  },
+  "include": ["./codegen.config.ts"]
+}

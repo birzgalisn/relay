@@ -14,13 +14,13 @@
     "db:check": "turbo run db:check --filter=@repo/prisma",
     "db:deploy": "turbo run db:deploy --filter=@repo/prisma",
     "db:seed": "turbo run db:seed --filter=@repo/prisma",
-    "db:sync": "pnpm run db:deploy && pnpm run db:seed",
-    "db:prepare": "turbo run db:prepare --filter=@repo/prisma"
+    "db:sync": "turbo run db:sync --filter=@repo/prisma"
   },
   "devDependencies": {
     "@repo/oxlint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "eslint-plugin-turbo": "catalog:",
+    "graphql-config": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "turbo": "catalog:"

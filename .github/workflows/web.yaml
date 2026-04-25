@@ -9,8 +9,9 @@ on:
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
       - apps/web/**
-      - packages/api/**
+      - packages/codegen/**
       - packages/ui/**
+      - graphql.config.ts
       - apps/web/Dockerfile
       - .devops/stack-data.yaml
       - .devops/stack-edge.yaml

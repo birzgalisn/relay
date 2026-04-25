@@ -1,0 +1,27 @@
+{
+  "name": "@repo/codegen",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "graphql-codegen --config ./codegen.config.ts",
+    "dev": "graphql-codegen --config ./codegen.config.ts --watch",
+    "lint": "oxlint .",
+    "clean": "rm -rf .turbo node_modules"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "catalog:",
+    "@graphql-codegen/near-operation-file-preset": "catalog:",
+    "@graphql-codegen/typescript": "catalog:",
+    "@graphql-codegen/typed-document-node": "catalog:",
+    "@graphql-codegen/typescript-operations": "catalog:",
+    "@parcel/watcher": "catalog:",
+    "@repo/oxlint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "graphql": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

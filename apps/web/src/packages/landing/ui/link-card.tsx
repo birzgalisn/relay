@@ -1,9 +1,11 @@
-import type { Link } from '@repo/api';
+import type { LandingLinksQuery } from '../data-access/landing-links.generated';
 
 import styles from './link-card.module.css';
 
+export type LandingLink = NonNullable<NonNullable<LandingLinksQuery['links']>[number]>;
+
 export type LinkCardProps = {
-  link: Link;
+  link: LandingLink;
   className?: string;
 };
 

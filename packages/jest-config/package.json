@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "clean": "rm -r .turbo node_modules",
+    "clean": "rm -rf .turbo node_modules",
     "lint": "oxlint ."
   },
   "devDependencies": {

@@ -14,7 +14,7 @@ FROM base AS pruner
 COPY . .
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm dlx turbo prune web --docker
+  pnpm dlx turbo prune web api --docker
 
 FROM base AS builder
 

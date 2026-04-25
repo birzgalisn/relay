@@ -6,20 +6,22 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "clean": "rm -r node_modules",
+    "clean": "rm -rf node_modules",
     "preview": "vite preview",
     "start": "vite preview",
     "lint": "oxlint .",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@apollo/client": "catalog:",
+    "@graphql-typed-document-node/core": "catalog:",
     "@repo/ui": "workspace:*",
-    "@tanstack/react-query": "catalog:",
+    "graphql": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@repo/api": "workspace:*",
+    "@repo/codegen": "workspace:*",
     "@repo/oxlint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",

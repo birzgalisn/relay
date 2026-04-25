@@ -1,8 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './app';
+import { getGraphqlHttpUrl } from './shared/util/get-graphql-http-url';
 
 import './globals.css';
 
@@ -13,13 +15,16 @@ async function bootstrap() {
     throw new Error('Unable to mount application');
   }
 
-  const queryClient = new QueryClient();
+  const apolloClient = new ApolloClient({
+    link: new HttpLink({ uri: getGraphqlHttpUrl() }),
+    cache: new InMemoryCache(),
+  });
 
   void createRoot(container).render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
+      <ApolloProvider client={apolloClient}>
         <App />
-      </QueryClientProvider>
+      </ApolloProvider>
     </StrictMode>,
   );
 }

@@ -1,23 +1,18 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@apollo/client/react';
 
-import { getApiBaseUrl } from '../../../shared/util/get-api-base-url';
-import { fetchLinks } from '../data-access/fetch-links';
-import { LINKS_QUERY_KEY } from './constants';
+import { getGraphqlHttpUrl } from '../../../shared/util/get-graphql-http-url';
+import { LandingLinksDocument } from '../data-access/landing-links.generated';
 
 export function useLandingLinks() {
-  const linksQuery = useQuery({
-    queryKey: LINKS_QUERY_KEY,
-    queryFn: fetchLinks,
-  });
-
-  const links = linksQuery.data ?? [];
+  const linksQuery = useQuery(LandingLinksDocument);
+  const links = linksQuery.data?.links ?? [];
 
   return {
     linksQuery,
     links,
-    apiBase: getApiBaseUrl(),
-    isPending: linksQuery.isPending,
-    isError: linksQuery.isError,
+    graphqlEndpoint: getGraphqlHttpUrl(),
+    isPending: linksQuery.loading,
+    isError: !!linksQuery.error,
     error: linksQuery.error,
     hasLinks: links.length > 0,
   };

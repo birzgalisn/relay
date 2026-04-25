@@ -1,16 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Query, Resolver } from '@nestjs/graphql';
 
 import { UpStatus } from './enums/up-status.enum';
 import { CheckDatabaseReachableUseCase } from './use-cases/check-database-reachable.use-case';
 
-@Controller('up')
-export class UpController {
+@Resolver()
+export class UpResolver {
   constructor(private readonly checkDatabaseReachable: CheckDatabaseReachableUseCase) {}
 
-  @Get()
-  async getUp(): Promise<UpStatus> {
-    await Promise.all([this.checkDatabaseReachable.execute()]);
-
-    return UpStatus.OK;
+  @Query(() => UpStatus)
+  up(): Promise<UpStatus> {
+    return this.checkDatabaseReachable.execute();
   }
 }

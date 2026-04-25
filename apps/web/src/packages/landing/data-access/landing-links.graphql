@@ -1,0 +1,8 @@
+query LandingLinks {
+  links {
+    id
+    url
+    title
+    description
+  }
+}

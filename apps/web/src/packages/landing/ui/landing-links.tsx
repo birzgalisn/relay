@@ -5,7 +5,7 @@ import { LinkCard } from './link-card';
 import styles from '../feature/landing.module.css';
 
 export function LandingLinks() {
-  const { apiBase, links, isPending, isError, error, hasLinks } = useLandingLinks();
+  const { graphqlEndpoint, links, isPending, isError, error, hasLinks } = useLandingLinks();
 
   if (isPending) {
     return <div className={styles.muted}>Loading links...</div>;
@@ -14,7 +14,7 @@ export function LandingLinks() {
   if (isError) {
     return (
       <div className={styles.muted}>
-        Could not load links from {apiBase}.{' '}
+        Could not load links from {graphqlEndpoint}.{' '}
         {isInstanceOfError(error) ? error.message : 'Unable to load links.'}
       </div>
     );
@@ -32,7 +32,7 @@ export function LandingLinks() {
 
   return (
     <div className={styles.muted}>
-      No links available. Make sure the NestJS API is running ({apiBase}).
+      No links available. Make sure the NestJS API is running ({graphqlEndpoint}).
     </div>
   );
 }

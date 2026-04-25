@@ -1,0 +1,33 @@
+import path from 'node:path';
+
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { Module } from '@nestjs/common';
+import { GraphQLModule } from '@nestjs/graphql';
+
+import { LinksModule } from '../links/links.module';
+import { UpModule } from '../up/up.module';
+
+const autoSchemaFile =
+  process.env.NODE_ENV === 'development'
+    ? path.join(process.cwd(), 'src/_generated/schema.graphql')
+    : true;
+
+/** Apollo turns introspection off in production unless explicitly enabled. */
+const introspection = process.env.GRAPHQL_INTROSPECTION !== 'false';
+
+@Module({
+  imports: [
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile,
+      introspection,
+      sortSchema: true,
+      playground: false,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+    }),
+    LinksModule,
+    UpModule,
+  ],
+})
+export class GraphqlModule {}

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Link } from '@repo/api';
 import { PrismaService } from '@repo/prisma';
+
+import type { Link } from '../models/link.model';
 
 @Injectable()
 export class GetLinkUseCase {

@@ -10,7 +10,7 @@ export default defineConfig({
   fixedExtension: false,
   platform: 'node',
   tsconfig: './tsconfig.json',
-  entry: ['./src/main.ts'],
+  entry: ['./src/main.ts', './src/write-graphql-schema.ts'],
   unbundle: true,
   exports: false,
   deps: {

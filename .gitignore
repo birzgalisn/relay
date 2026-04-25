@@ -36,6 +36,7 @@ build
 dist
 *.tsbuildinfo
 **/_generated
+**/*.generated.ts
 
 # IDEs and editors
 /.idea

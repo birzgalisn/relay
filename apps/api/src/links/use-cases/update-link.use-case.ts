@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Link, UpdateLinkDto } from '@repo/api';
 import { PrismaService } from '@repo/prisma';
+
+import type { UpdateLinkInput } from '../inputs/update-link.input';
+import type { Link } from '../models/link.model';
 
 @Injectable()
 export class UpdateLinkUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(id: string, updateLinkDto: UpdateLinkDto): Promise<Link> {
+  async execute(id: string, input: UpdateLinkInput): Promise<Link> {
     const existing = await this.prisma.link.findUnique({ where: { id } });
 
     if (!existing) {
@@ -15,7 +17,11 @@ export class UpdateLinkUseCase {
 
     return this.prisma.link.update({
       where: { id },
-      data: updateLinkDto,
+      data: {
+        ...(input.title ? { title: input.title } : {}),
+        ...(input.url ? { url: input.url } : {}),
+        ...(input.description ? { description: input.description } : {}),
+      },
     });
   }
 }

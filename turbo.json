@@ -1,10 +1,10 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["NODE_ENV", "DATABASE_URL"],
+  "globalDependencies": ["**/.env.*local", "graphql.config.ts"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "GRAPHQL_INTROSPECTION"],
   "tasks": {
     "dev": {
-      "dependsOn": ["@repo/prisma#db:prepare"],
+      "dependsOn": ["@repo/prisma#db:sync", "api#build"],
       "cache": false,
       "persistent": true
     },
@@ -26,11 +26,25 @@
     "db:deploy": {
       "cache": false
     },
-    "db:prepare": {
+    "db:sync": {
+      "dependsOn": ["build"],
       "cache": false
     },
     "db:seed": {
       "cache": false
+    },
+    "api#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "src/_generated/schema.graphql"]
+    },
+    "@repo/codegen#build": {
+      "dependsOn": ["api#build", "^build"],
+      "cache": false
+    },
+    "@repo/codegen#dev": {
+      "dependsOn": ["api#build"],
+      "cache": false,
+      "persistent": true
     }
   }
 }

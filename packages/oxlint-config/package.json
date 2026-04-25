@@ -10,7 +10,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "clean": "rm -r node_modules"
+    "clean": "rm -rf node_modules"
   },
   "devDependencies": {
     "oxlint": "catalog:"
