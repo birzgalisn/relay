@@ -7,7 +7,6 @@
     "build": "turbo run build",
     "clean": "turbo run clean",
     "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
