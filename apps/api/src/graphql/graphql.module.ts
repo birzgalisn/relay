@@ -9,9 +9,9 @@ import { LinksModule } from '../links/links.module';
 import { UpModule } from '../up/up.module';
 
 const autoSchemaFile =
-  process.env.NODE_ENV === 'development'
-    ? path.join(process.cwd(), 'src/_generated/schema.graphql')
-    : true;
+  process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test'
+    ? true
+    : path.join(process.cwd(), 'src/_generated/schema.graphql');
 
 @Module({
   imports: [
