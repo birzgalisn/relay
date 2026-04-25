@@ -10,7 +10,7 @@
     "dev": "nest start --watch",
     "dev:debug": "nest start --debug --watch",
     "build": "tsdown && node dist/write-graphql-schema.js",
-    "clean": "rm -rf dist node_modules tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist node_modules .turbo coverage src/_generated tsconfig.tsbuildinfo",
     "start": "node dist/main.js",
     "test": "jest",
     "test:watch": "jest --watch",

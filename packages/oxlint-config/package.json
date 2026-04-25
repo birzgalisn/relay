@@ -10,7 +10,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "clean": "rm -rf node_modules"
+    "clean": "rm -rf node_modules .turbo tsconfig.tsbuildinfo"
   },
   "devDependencies": {
     "oxlint": "catalog:"

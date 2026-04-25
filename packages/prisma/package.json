@@ -19,7 +19,7 @@
   "scripts": {
     "generate": "prisma generate",
     "build": "pnpm run generate && tsdown",
-    "clean": "rm -rf .turbo dist node_modules",
+    "clean": "rm -rf .turbo dist node_modules src/_generated tsconfig.tsbuildinfo",
     "dev": "pnpm run db:studio",
     "lint": "oxlint .",
     "db:migrate": "prisma migrate dev",

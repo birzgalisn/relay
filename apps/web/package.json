@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "clean": "rm -rf node_modules",
+    "clean": "find src -type f -name '*.generated.ts' -delete; rm -rf dist node_modules .turbo src/_generated tsconfig.tsbuildinfo",
     "preview": "vite preview",
     "start": "vite preview",
     "lint": "oxlint .",

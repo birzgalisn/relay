@@ -7,7 +7,7 @@
     "build": "graphql-codegen --config ./codegen.config.ts",
     "dev": "graphql-codegen --config ./codegen.config.ts --watch",
     "lint": "oxlint .",
-    "clean": "rm -rf .turbo node_modules"
+    "clean": "rm -rf .turbo node_modules tsconfig.tsbuildinfo"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "catalog:",
