@@ -13,15 +13,11 @@ const autoSchemaFile =
     ? path.join(process.cwd(), 'src/_generated/schema.graphql')
     : true;
 
-/** Apollo turns introspection off in production unless explicitly enabled. */
-const introspection = process.env.GRAPHQL_INTROSPECTION !== 'false';
-
 @Module({
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile,
-      introspection,
       sortSchema: true,
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
