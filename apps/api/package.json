@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "nest start --watch",
     "dev:debug": "nest start --debug --watch",
-    "build": "tsdown && node dist/write-graphql-schema.js && pnpm exec oxfmt src/_generated/schema.graphql",
+    "build": "tsdown && node dist/write-graphql-schema.js",
     "clean": "rm -rf dist node_modules tsconfig.tsbuildinfo",
     "start": "node dist/main.js",
     "test": "jest",
@@ -42,7 +42,6 @@
     "@repo/jest-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",
-    "oxfmt": "catalog:",
     "jest": "catalog:",
     "source-map-support": "catalog:",
     "ts-jest": "catalog:",
