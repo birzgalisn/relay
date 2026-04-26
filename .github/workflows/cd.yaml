@@ -21,7 +21,7 @@ permissions:
   packages: read
 
 concurrency:
-  group: ${{ github.repository }}-swarm-deploy
+  group: ${{ github.repository }}-swarm-deploy-${{ inputs.app }}
   cancel-in-progress: false
 
 env:
