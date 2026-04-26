@@ -67,11 +67,13 @@ data() {
 
 api() {
   [[ -n ${DATABASE_URL:-} && -n ${REDIS_URL:-} ]] || die "DATABASE_URL and REDIS_URL required"
+  dx pull "${IMAGE_ROOT}-api:${IMAGE_TAG}"
   deploy_stack relay_api "$DIR/stack-api.yaml"
   wait_svc relay_api_api
 }
 
 web() {
+  dx pull "${IMAGE_ROOT}-web:${IMAGE_TAG}"
   deploy_stack relay_web "$DIR/stack-web.yaml"
   wait_svc relay_web_web
 }
