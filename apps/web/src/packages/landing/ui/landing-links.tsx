@@ -1,38 +1,51 @@
+import { Flex, Group, Loader, Text } from '@repo/ui';
+
 import { isInstanceOfError } from '../../../shared/util/is-instance-of-error';
 import { useLandingLinks } from '../util/use-landing-links';
 import { LinkCard } from './link-card';
-
-import styles from '../feature/landing.module.css';
 
 export function LandingLinks() {
   const { graphqlEndpoint, links, isPending, isError, error, hasLinks } = useLandingLinks();
 
   if (isPending) {
-    return <div className={styles.muted}>Loading links...</div>;
+    return (
+      <Group justify="center" gap="xs">
+        <Loader size="sm" />
+        <Text c="dimmed" size="sm">
+          Loading links...
+        </Text>
+      </Group>
+    );
   }
 
   if (isError) {
     return (
-      <div className={styles.muted}>
+      <Text c="dimmed" size="sm" ta="center">
         Could not load links from {graphqlEndpoint}.{' '}
         {isInstanceOfError(error) ? error.message : 'Unable to load links.'}
-      </div>
+      </Text>
     );
   }
 
   if (hasLinks) {
     return (
-      <div className={styles.actions}>
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        gap="md"
+        align="center"
+        justify="center"
+        wrap="wrap"
+      >
         {links.map((link) => (
-          <LinkCard key={link.id} link={link} className={styles.secondary} />
+          <LinkCard key={link.id} link={link} />
         ))}
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div className={styles.muted}>
+    <Text c="dimmed" size="sm" ta="center">
       No links available. Make sure the NestJS API is running ({graphqlEndpoint}).
-    </div>
+    </Text>
   );
 }

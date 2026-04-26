@@ -33,6 +33,8 @@
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "@repo/postcss-config": "workspace:*",
+    "postcss": "catalog:"
   }
 }

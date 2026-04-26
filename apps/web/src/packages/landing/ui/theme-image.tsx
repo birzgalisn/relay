@@ -1,33 +1,14 @@
+import { Image, useComputedColorScheme } from '@repo/ui';
 import type { ImgHTMLAttributes } from 'react';
 
-export type ThemeImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
+export type ThemeImageProps = {
   srcLight: string;
   srcDark: string;
-};
+} & Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'>;
 
-export function ThemeImage(props: ThemeImageProps) {
-  const { srcLight, srcDark, className, alt, width, height, ...rest } = props;
-  const w = typeof width === 'number' ? width : undefined;
-  const h = typeof height === 'number' ? height : undefined;
+export function ThemeImage({ srcLight, srcDark, ...rest }: ThemeImageProps) {
+  const colorScheme = useComputedColorScheme('light');
+  const src = colorScheme === 'dark' ? srcDark : srcLight;
 
-  return (
-    <>
-      <img
-        {...rest}
-        src={srcLight}
-        alt={alt ?? ''}
-        width={w}
-        height={h}
-        className={`imgLight ${className ?? ''}`.trim()}
-      />
-      <img
-        {...rest}
-        src={srcDark}
-        alt={alt ?? ''}
-        width={w}
-        height={h}
-        className={`imgDark ${className ?? ''}`.trim()}
-      />
-    </>
-  );
+  return <Image src={src} {...rest} />;
 }

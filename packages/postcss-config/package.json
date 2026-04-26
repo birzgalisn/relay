@@ -1,0 +1,21 @@
+{
+  "name": "@repo/postcss-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./mantine": "./mantine.cjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "dependencies": {
+    "postcss-preset-mantine": "catalog:",
+    "postcss-simple-vars": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/oxlint-config": "workspace:*",
+    "oxlint": "catalog:"
+  }
+}

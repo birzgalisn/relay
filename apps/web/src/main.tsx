@@ -1,3 +1,4 @@
+import { UiProvider } from '@repo/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -15,9 +16,11 @@ async function bootstrap() {
 
   void createRoot(container).render(
     <StrictMode>
-      <GraphqlProvider>
-        <Router />
-      </GraphqlProvider>
+      <UiProvider>
+        <GraphqlProvider>
+          <Router />
+        </GraphqlProvider>
+      </UiProvider>
     </StrictMode>,
   );
 }

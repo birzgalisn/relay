@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./src/index.tsx",
-    "./*": "./src/*.tsx"
+    ".": "./src/index.tsx"
   },
   "scripts": {
     "lint": "oxlint .",
@@ -14,7 +13,9 @@
   },
   "dependencies": {
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "@mantine/core": "catalog:",
+    "@mantine/hooks": "catalog:"
   },
   "devDependencies": {
     "@repo/oxlint-config": "workspace:*",
