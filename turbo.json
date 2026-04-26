@@ -64,6 +64,10 @@
     "api#check-types": {
       "dependsOn": ["^build", "^check-types"],
       "cache": false
+    },
+    "@repo/prisma#check-types": {
+      "dependsOn": ["generate"],
+      "cache": false
     }
   }
 }
