@@ -94,7 +94,7 @@ case ${DEPLOY_PHASE:?} in
     case $SERVICE_NAME in api | web) ;; *) die "SERVICE_NAME must be api or web" ;; esac
     [[ -n ${IMAGE_ROOT:-} && -n ${IMAGE_TAG:-} ]] || die "IMAGE_ROOT and IMAGE_TAG required"
     case $SERVICE_NAME in api) api ;; web) web ;; esac
-    dx image prune -f &>/dev/null || true
+    dx image prune -a -f &>/dev/null || true
     ;;
   *) die "DEPLOY_PHASE must be provision or app (got $DEPLOY_PHASE)" ;;
 esac
