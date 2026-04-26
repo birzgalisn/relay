@@ -30,7 +30,7 @@ ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV NODE_ENV=production
 
-RUN pnpm exec turbo build --filter=web...
+RUN pnpm exec turbo run check-types build --filter=web...
 
 FROM nginx:1.30-alpine AS runner
 

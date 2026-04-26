@@ -1,5 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "extends": ["../../packages/oxlint-config/src/react-internal.json"],
-  "ignorePatterns": ["dist/**", "**/*.generated.ts", "**/_generated/**"]
+  "ignorePatterns": ["dist/**", "**/*.generated.ts", "**/_generated/**", "postcss.config.cjs"]
 }

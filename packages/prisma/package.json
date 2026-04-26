@@ -18,14 +18,15 @@
   },
   "scripts": {
     "generate": "prisma generate",
-    "build": "pnpm run generate && tsdown",
+    "build": "tsdown",
     "clean": "rm -rf .turbo dist node_modules src/_generated tsconfig.tsbuildinfo",
     "dev": "pnpm run db:studio",
+    "check-types": "tsc --noEmit",
     "lint": "oxlint .",
     "db:migrate": "prisma migrate dev",
     "db:check": "prisma migrate status",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "pnpm run build && pnpm run db:seed:run",
+    "db:seed": "pnpm run generate && pnpm run build && pnpm run db:seed:run",
     "db:seed:run": "prisma db seed",
     "db:sync": "pnpm run db:deploy && pnpm run db:seed:run",
     "db:studio": "prisma studio --port 5555 --browser none"

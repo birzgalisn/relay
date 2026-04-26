@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
+    "generate": "turbo run generate",
     "build": "turbo run build",
+    "check-types": "turbo run check-types",
     "clean": "turbo run clean && rm -rf .pnpm-home .pnpm-store .turbo node_modules out",
     "test": "turbo run test",
     "lint": "turbo run lint",

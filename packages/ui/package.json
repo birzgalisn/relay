@@ -6,16 +6,15 @@
     ".": "./src/index.tsx"
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "lint": "oxlint .",
-    "clean": "rm -rf node_modules .turbo dist tsconfig.tsbuildinfo",
-    "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "clean": "rm -rf node_modules .turbo dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "@mantine/core": "catalog:",
-    "@mantine/hooks": "catalog:"
+    "@mantine/hooks": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@repo/oxlint-config": "workspace:*",

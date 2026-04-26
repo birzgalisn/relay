@@ -31,7 +31,8 @@ COPY --from=pruner /app/out/full/ .
 # ENV TURBO_TEAM=$TURBO_TEAM
 
 ENV NODE_ENV=production
-RUN pnpm exec turbo build --filter=api...
+
+RUN pnpm exec turbo run check-types build --filter=api...
 
 FROM builder AS deployer
 

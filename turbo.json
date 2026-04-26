@@ -8,9 +8,16 @@
       "cache": false,
       "persistent": true
     },
+    "generate": {
+      "cache": false
+    },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "generate"],
       "outputs": ["dist/**"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "cache": false
     },
     "clean": {
       "cache": false
@@ -37,14 +44,26 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "src/_generated/schema.graphql"]
     },
-    "@repo/codegen#build": {
-      "dependsOn": ["api#build", "^build"],
+    "@repo/codegen#generate": {
+      "dependsOn": ["api#build"],
       "cache": false
     },
     "@repo/codegen#dev": {
       "dependsOn": ["api#build"],
       "cache": false,
       "persistent": true
+    },
+    "web#generate": {
+      "dependsOn": ["@repo/codegen#generate"],
+      "cache": false
+    },
+    "web#check-types": {
+      "dependsOn": ["generate", "^check-types"],
+      "cache": false
+    },
+    "api#check-types": {
+      "dependsOn": ["^build", "^check-types"],
+      "cache": false
     }
   }
 }

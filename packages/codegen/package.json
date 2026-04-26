@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "graphql-codegen --config ./codegen.config.ts",
-    "dev": "graphql-codegen --config ./codegen.config.ts --watch",
+    "generate": "graphql-codegen --config ./codegen.config.ts",
+    "dev": "pnpm run generate -- --watch",
+    "check-types": "tsc --noEmit",
     "lint": "oxlint .",
     "clean": "rm -rf .turbo node_modules tsconfig.tsbuildinfo"
   },
