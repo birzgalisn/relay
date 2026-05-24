@@ -1,16 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 
 import { UpStatus } from './enums/up-status.enum';
-import { CheckDatabaseReachableUseCase } from './use-cases/check-database-reachable.use-case';
+import { RunUpChecksUseCase } from './use-cases/run-up-checks.use-case';
 
 @Controller('up')
 export class UpController {
-  constructor(private readonly checkDatabaseReachable: CheckDatabaseReachableUseCase) {}
+  constructor(private readonly runUpChecks: RunUpChecksUseCase) {}
 
   @Get()
-  async getUp(): Promise<UpStatus> {
-    await Promise.all([this.checkDatabaseReachable.execute()]);
-
-    return UpStatus.OK;
+  getUp(): Promise<UpStatus> {
+    return this.runUpChecks.execute();
   }
 }

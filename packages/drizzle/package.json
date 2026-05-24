@@ -1,0 +1,54 @@
+{
+  "name": "@repo/drizzle",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist",
+    "drizzle"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./lib/seed/run": {
+      "types": "./dist/lib/seed/run.d.ts",
+      "require": "./dist/lib/seed/run.js",
+      "default": "./dist/lib/seed/run.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rm -rf .turbo dist node_modules tsconfig.tsbuildinfo",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint .",
+    "dev": "pnpm run db:studio",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
+    "db:deploy": "drizzle-kit migrate",
+    "db:seed": "pnpm run build && pnpm run db:seed:run",
+    "db:seed:run": "node ./dist/lib/seed/run.js",
+    "db:sync": "pnpm run db:deploy && pnpm run db:seed:run",
+    "db:studio": "drizzle-kit studio --host 0.0.0.0 --port 4983"
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "dotenv": "catalog:",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/oxlint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/pg": "catalog:",
+    "drizzle-kit": "catalog:",
+    "oxlint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

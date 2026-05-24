@@ -1,3 +1,7 @@
+import { Notifications } from '@mantine/notifications';
+
+import '@mantine/dropzone/styles.css';
+import '@mantine/notifications/styles.css';
 import { UiProvider } from '@repo/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -17,6 +21,7 @@ async function bootstrap() {
   void createRoot(container).render(
     <StrictMode>
       <UiProvider>
+        <Notifications position="top-right" zIndex={4000} />
         <GraphqlProvider>
           <Router />
         </GraphqlProvider>

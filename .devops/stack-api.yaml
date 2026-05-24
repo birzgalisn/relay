@@ -1,13 +1,29 @@
 services:
+  media-init:
+    image: busybox:latest
+    user: root
+    volumes:
+      - media_data:/relay-media
+    command: chown -R 1000:1000 /relay-media
+    deploy:
+      restart_policy:
+        condition: none
+        max_attempts: 1
+
   api:
     image: ${IMAGE_ROOT}-api:${IMAGE_TAG}
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
+      API_BASE_URL: ${API_BASE_URL}
+    volumes:
+      - media_data:/relay-media
     networks:
       - relay_edge
       - relay_internal
+    depends_on:
+      - media-init
     deploy:
       replicas: 1
       update_config:
@@ -31,7 +47,7 @@ services:
         - traefik.http.services.${PROJECT}-api.loadbalancer.healthcheck.interval=5s
         - traefik.http.services.${PROJECT}-api.loadbalancer.healthcheck.timeout=2s
     healthcheck:
-      test: [ 'CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/up >/dev/null || exit 1' ]
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:3000/up]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -42,3 +58,6 @@ networks:
     external: true
   relay_internal:
     external: true
+
+volumes:
+  media_data:

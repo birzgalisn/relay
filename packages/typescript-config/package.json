@@ -8,11 +8,6 @@
     "./react-library.json": "./src/react-library.json"
   },
   "scripts": {
-    "lint": "oxlint .",
     "clean": "rm -rf node_modules .turbo tsconfig.tsbuildinfo"
-  },
-  "devDependencies": {
-    "@repo/oxlint-config": "workspace:*",
-    "oxlint": "catalog:"
   }
 }

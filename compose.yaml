@@ -3,6 +3,7 @@ name: ${PROJECT}
 volumes:
   postgres_data:
   redis_data:
+  media_data:
 
 networks:
   internal:
@@ -24,7 +25,7 @@ services:
     networks:
       - internal
     healthcheck:
-      test: [ 'CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}' ]
+      test: [CMD, pg_isready, -U, "${POSTGRES_USER}", -d, "${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -32,25 +33,33 @@ services:
   redis:
     profiles: [ dev, preview ]
     image: redis:8.6-alpine
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD} --protected-mode yes
     environment:
-      - REDIS_ARGS=${REDIS_ARGS}
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
       - internal
     healthcheck:
-      test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
+      test: [CMD, redis-cli, ping]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  deps: &dev_node
+  media-init:
+    profiles: [ dev, preview ]
+    image: busybox:latest
+    user: root
+    volumes:
+      - media_data:/relay-media
+    command: chown -R 1000:1000 /relay-media
+
+  pnpm-init: &node
     profiles: [ dev ]
     build:
       context: .
       dockerfile: Dockerfile.node
-    image: relay-dev:latest
-    user: ${HOST_UID:-1000}:${HOST_GID:-1000}
+    image: relay-node:latest
     env_file:
       - .env.local
     environment:
@@ -64,8 +73,11 @@ services:
       - internal
 
   turbo:
-    <<: *dev_node
+    <<: *node
     profiles: [ dev ]
+    volumes:
+      - .:/app
+      - media_data:/relay-media
     command: pnpm run dev
     labels:
       - traefik.enable=true
@@ -77,22 +89,32 @@ services:
       - traefik.http.routers.${PROJECT}-web.entrypoints=http
       - traefik.http.routers.${PROJECT}-web.service=${PROJECT}-web
       - traefik.http.services.${PROJECT}-web.loadbalancer.server.port=4000
+      - traefik.http.middlewares.${PROJECT}-studio-openui.redirectregex.regex=^https?://.*
+      - traefik.http.middlewares.${PROJECT}-studio-openui.redirectregex.replacement=https://local.drizzle.studio/?host=studio.${CNAME}&port=80
+      - traefik.http.routers.${PROJECT}-studio-openui.rule=Host(`studio.${CNAME}`) && Method(`GET`) && Path(`/`)
+      - traefik.http.routers.${PROJECT}-studio-openui.entrypoints=http
+      - traefik.http.routers.${PROJECT}-studio-openui.service=noop@internal
+      - traefik.http.routers.${PROJECT}-studio-openui.middlewares=${PROJECT}-studio-openui@docker
+      - traefik.http.routers.${PROJECT}-studio-openui.priority=100
       - traefik.http.routers.${PROJECT}-studio.rule=Host(`studio.${CNAME}`)
       - traefik.http.routers.${PROJECT}-studio.entrypoints=http
+      - traefik.http.routers.${PROJECT}-studio.priority=1
       - traefik.http.routers.${PROJECT}-studio.service=${PROJECT}-studio
-      - traefik.http.services.${PROJECT}-studio.loadbalancer.server.port=5555
+      - traefik.http.services.${PROJECT}-studio.loadbalancer.server.port=4983
     networks:
       - internal
       - proxy
     depends_on:
+      media-init:
+        condition: service_completed_successfully
+      pnpm-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
         restart: true
       redis:
         condition: service_healthy
         restart: true
-      deps:
-        condition: service_completed_successfully
 
   api:
     profiles: [ preview ]
@@ -102,6 +124,10 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - API_BASE_URL=${API_BASE_URL}
+    volumes:
+      - media_data:/relay-media
     labels:
       - traefik.enable=true
       - traefik.http.routers.${PROJECT}-api.rule=Host(`api.${CNAME}`)
@@ -112,12 +138,16 @@ services:
       - internal
       - proxy
     healthcheck:
-      test: [ 'CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:3000/up' ]
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:3000/up]
       interval: 5s
       timeout: 5s
       retries: 5
     depends_on:
+      media-init:
+        condition: service_completed_successfully
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   web:
@@ -136,7 +166,7 @@ services:
     networks:
       - proxy
     healthcheck:
-      test: [ 'CMD', 'wget', '-q', '--spider', 'http://127.0.0.1/up' ]
+      test: [CMD, wget, -q, --spider, http://127.0.0.1/up]
       interval: 5s
       timeout: 5s
       retries: 5

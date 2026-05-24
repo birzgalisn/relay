@@ -1,9 +1,20 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@repo/prisma';
+import { ConfigModule } from '@nestjs/config';
+import { DrizzleModule } from '@repo/drizzle';
 
-import { GraphqlModule } from './graphql/graphql.module';
+import { GraphqlModule } from './infrastructure/graphql/graphql.module';
+import { MediaModule } from './infrastructure/media/media.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
 
 @Module({
-  imports: [PrismaModule, GraphqlModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    DrizzleModule,
+    RedisModule,
+    GraphqlModule,
+    MediaModule,
+  ],
 })
 export class AppModule {}

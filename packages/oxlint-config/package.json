@@ -9,10 +9,6 @@
     "./react-internal": "./src/react-internal.json"
   },
   "scripts": {
-    "lint": "oxlint .",
     "clean": "rm -rf node_modules .turbo tsconfig.tsbuildinfo"
-  },
-  "devDependencies": {
-    "oxlint": "catalog:"
   }
 }

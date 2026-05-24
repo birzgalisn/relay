@@ -38,7 +38,7 @@ jobs:
             package.json
             pnpm-lock.yaml
             pnpm-workspace.yaml
-            packages/prisma
+            packages/drizzle
             packages/typescript-config
             packages/oxlint-config
 
@@ -75,11 +75,8 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client
-        run: pnpm --filter=@repo/prisma run generate
-
       - name: Run database migrations
-        run: pnpm --filter=@repo/prisma run db:deploy
+        run: pnpm --filter=@repo/drizzle run db:deploy
 
       - name: Disallow database access (detach Hetzner firewall)
         if: always() && steps.hetzner.outputs.enabled == 'true'

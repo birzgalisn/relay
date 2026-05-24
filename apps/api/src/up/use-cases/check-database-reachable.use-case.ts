@@ -1,19 +1,17 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
-import { PrismaService } from '@repo/prisma';
+import { DrizzleService } from '@repo/drizzle';
 
-import { UpStatus } from '../enums/up-status.enum';
+import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
 
 @Injectable()
-export class CheckDatabaseReachableUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+export class CheckDatabaseReachableUseCase implements UseCase {
+  constructor(private readonly drizzle: DrizzleService) {}
 
-  async execute(): Promise<UpStatus> {
+  async execute(): Promise<void> {
     try {
-      await this.prisma.$queryRaw<number>`SELECT 1`;
+      await this.drizzle.ping();
     } catch {
-      throw new ServiceUnavailableException();
+      throw new ServiceUnavailableException('Database unreachable');
     }
-
-    return UpStatus.OK;
   }
 }

@@ -10,7 +10,7 @@ on:
       - pnpm-workspace.yaml
       - apps/api/**
       - packages/codegen/**
-      - packages/prisma/**
+      - packages/drizzle/**
       - graphql.config.ts
       - apps/api/Dockerfile
       - .devops/stack-data.yaml

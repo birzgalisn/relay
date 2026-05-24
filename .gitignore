@@ -1,12 +1,12 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Dependencies
-node_modules
-out
+node_modules/
+out/
 .pnp
 .pnp.js
-.pnpm-home
-.pnpm-store
+.pnpm-home/
+.pnpm-store/
 
 # Local env files
 .env
@@ -18,7 +18,7 @@ out
 # Testing
 .nyc_output
 blob-report/
-coverage
+coverage/
 test-results/
 playwright/.cache/
 playwright-report/
@@ -31,12 +31,12 @@ playwright-report/
 
 # Build Outputs
 .next/
-out/
-build
-dist
+.tanstack/
+build/
+dist/
 *.tsbuildinfo
-**/_generated
-**/*.generated.ts
+_generated/
+*.generated.ts
 
 # IDEs and editors
 /.idea

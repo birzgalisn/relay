@@ -37,6 +37,7 @@ env:
   DEPLOY_PHASE: app
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
 
 jobs:
   migrate:

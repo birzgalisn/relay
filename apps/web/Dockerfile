@@ -29,10 +29,13 @@ COPY --from=pruner /app/out/full/ .
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://required:for@drizzle:5432/init"
+ENV REDIS_URL="redis://:not@real:6379"
+ENV API_BASE_URL="http://localhost:3000"
 
-RUN pnpm exec turbo run check-types build --filter=web...
+RUN pnpm exec turbo run build --filter=web...
 
-FROM nginx:1.30-alpine AS runner
+FROM nginx:1-alpine AS runner
 
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 

@@ -16,7 +16,7 @@ services:
     networks:
       - relay_internal
     healthcheck:
-      test: [ 'CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"' ]
+      test: [CMD, pg_isready, -U, "${POSTGRES_USER}", -d, "${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -35,15 +35,15 @@ services:
 
   redis:
     image: redis:8.6-alpine
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD} --protected-mode yes
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_ARGS=${REDIS_ARGS}
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
       - relay_internal
     healthcheck:
-      test: [ 'CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG' ]
+      test: [CMD, redis-cli, ping]
       interval: 5s
       timeout: 5s
       retries: 5

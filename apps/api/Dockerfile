@@ -31,8 +31,11 @@ COPY --from=pruner /app/out/full/ .
 # ENV TURBO_TEAM=$TURBO_TEAM
 
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://required:for@drizzle:5432/init"
+ENV REDIS_URL="redis://:not@real:6379"
+ENV API_BASE_URL="http://localhost:3000"
 
-RUN pnpm exec turbo run check-types build --filter=api...
+RUN pnpm exec turbo run build --filter=api...
 
 FROM builder AS deployer
 
@@ -41,12 +44,11 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 FROM base AS runner
 
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nestjs -G nodejs -H
+RUN apk add --no-cache wget
 
-USER nestjs
+USER node
 
-COPY --from=deployer --chown=nestjs:nodejs /deploy/ .
+COPY --from=deployer --chown=node:node /deploy/ .
 
 EXPOSE 3000/tcp
 

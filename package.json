@@ -12,11 +12,11 @@
     "lint": "turbo run lint",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "db:migrate": "turbo run db:migrate --filter=@repo/prisma",
-    "db:check": "turbo run db:check --filter=@repo/prisma",
-    "db:deploy": "turbo run db:deploy --filter=@repo/prisma",
-    "db:seed": "turbo run db:seed --filter=@repo/prisma",
-    "db:sync": "turbo run db:sync --filter=@repo/prisma"
+    "db:check": "turbo run db:check --filter=@repo/drizzle",
+    "db:deploy": "turbo run db:deploy --filter=@repo/drizzle",
+    "db:seed": "turbo run db:seed --filter=@repo/drizzle",
+    "db:sync": "turbo run db:sync --filter=@repo/drizzle",
+    "db:studio": "turbo run db:studio --filter=@repo/drizzle"
   },
   "devDependencies": {
     "@repo/oxlint-config": "workspace:*",
@@ -30,5 +30,5 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"
+  "packageManager": "pnpm@11.3.0"
 }

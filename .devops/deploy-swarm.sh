@@ -27,6 +27,22 @@ swarm() {
 
 deploy_stack() { dx stack deploy --with-registry-auth -c "$2" "$1"; }
 
+wait_init_svc() {
+  local svc=$1 i
+  for ((i = 1; i <= MAX; i++)); do
+    if dx service ps "$svc" --no-trunc --format '{{.CurrentState}}' 2>/dev/null | grep -qE 'Failed|Rejected'; then
+      dx service ps "$svc" --no-trunc || true
+      die "$svc: init failed"
+    fi
+    if dx service ps "$svc" --no-trunc --format '{{.CurrentState}}' 2>/dev/null | grep -q Complete; then
+      return 0
+    fi
+    sleep "$POLL"
+  done
+  dx service ps "$svc" --no-trunc || true
+  die "$svc: init timeout"
+}
+
 wait_svc() {
   local svc=$1 i st rep h w
   for ((i = 1; i <= MAX; i++)); do
@@ -69,6 +85,7 @@ api() {
   [[ -n ${DATABASE_URL:-} && -n ${REDIS_URL:-} ]] || die "DATABASE_URL and REDIS_URL required"
   dx pull "${IMAGE_ROOT}-api:${IMAGE_TAG}"
   deploy_stack relay_api "$DIR/stack-api.yaml"
+  wait_init_svc relay_api_media-init
   wait_svc relay_api_api
 }
 

@@ -26,7 +26,7 @@ services:
     networks:
       - edge
     healthcheck:
-      test: [ 'CMD-SHELL', 'traefik healthcheck --ping | grep OK' ]
+      test: [CMD, traefik, healthcheck, --ping]
       interval: 5s
       timeout: 5s
       retries: 5

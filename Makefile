@@ -1,8 +1,5 @@
-HOST_UID := $(shell id -u)
-HOST_GID := $(shell id -g)
-
 DOCKER_COMPOSE_EDGE := docker compose --env-file .env.local -f compose.edge.yaml
-DOCKER_COMPOSE := HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) docker compose --env-file .env.local -f compose.yaml
+DOCKER_COMPOSE := docker compose --env-file .env.local -f compose.yaml
 DOCKER_COMPOSE_DEV := $(DOCKER_COMPOSE) --profile dev
 DOCKER_COMPOSE_PREVIEW := $(DOCKER_COMPOSE) --profile preview
 
@@ -57,3 +54,7 @@ preview-down:
 .PHONY: preview-rmi
 preview-rmi:
 	$(DOCKER_COMPOSE_PREVIEW) down --volumes --remove-orphans --rmi all
+
+.PHONY: console shell
+console shell:
+	$(DOCKER_COMPOSE_DEV) exec -it turbo sh

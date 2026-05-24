@@ -1,14 +1,14 @@
 import { Query, Resolver } from '@nestjs/graphql';
 
 import { UpStatus } from './enums/up-status.enum';
-import { CheckDatabaseReachableUseCase } from './use-cases/check-database-reachable.use-case';
+import { RunUpChecksUseCase } from './use-cases/run-up-checks.use-case';
 
 @Resolver()
 export class UpResolver {
-  constructor(private readonly checkDatabaseReachable: CheckDatabaseReachableUseCase) {}
+  constructor(private readonly runUpChecks: RunUpChecksUseCase) {}
 
   @Query(() => UpStatus)
   up(): Promise<UpStatus> {
-    return this.checkDatabaseReachable.execute();
+    return this.runUpChecks.execute();
   }
 }

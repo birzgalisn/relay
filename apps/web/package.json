@@ -16,11 +16,19 @@
   "dependencies": {
     "@apollo/client": "catalog:",
     "@graphql-typed-document-node/core": "catalog:",
+    "@mantine/core": "catalog:",
+    "@mantine/dropzone": "catalog:",
+    "@mantine/form": "catalog:",
+    "@mantine/hooks": "catalog:",
+    "@mantine/notifications": "catalog:",
     "@repo/ui": "workspace:*",
     "@tanstack/react-router": "catalog:",
     "graphql": "catalog:",
+    "graphql-ws": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "tus-js-client": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/codegen": "workspace:*",

@@ -30,8 +30,42 @@ permissions:
   packages: write
 
 jobs:
+  verify:
+    name: Lint and typecheck
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      REDIS_URL: redis://:ci@localhost:6379
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and typecheck
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.app }}" = web ]; then
+            # Match web image build: prune includes api; web#build depends on api#build (codegen)
+            pnpm exec turbo run lint check-types --filter="${{ inputs.app }}..." --filter=api...
+          else
+            pnpm exec turbo run lint check-types --filter="${{ inputs.app }}..."
+          fi
+
   build:
     name: Build image
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: read

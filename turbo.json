@@ -1,10 +1,10 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalDependencies": ["**/.env.*local", "graphql.config.ts"],
-  "globalEnv": ["NODE_ENV", "DATABASE_URL", "GRAPHQL_INTROSPECTION"],
+  "globalDependencies": ["**/.env.*local"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "API_BASE_URL"],
   "tasks": {
     "dev": {
-      "dependsOn": ["@repo/prisma#db:sync", "api#build"],
+      "dependsOn": ["@repo/drizzle#db:sync", "api#build"],
       "cache": false,
       "persistent": true
     },
@@ -24,9 +24,6 @@
     },
     "lint": {},
     "test": {},
-    "db:migrate": {
-      "cache": false
-    },
     "db:check": {
       "cache": false
     },
@@ -40,9 +37,17 @@
     "db:seed": {
       "cache": false
     },
+    "db:studio": {
+      "cache": false,
+      "persistent": true
+    },
     "api#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "src/_generated/schema.graphql"]
+    },
+    "@repo/drizzle#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     },
     "@repo/codegen#generate": {
       "dependsOn": ["api#build"],
@@ -65,8 +70,8 @@
       "dependsOn": ["^build", "^check-types"],
       "cache": false
     },
-    "@repo/prisma#check-types": {
-      "dependsOn": ["generate"],
+    "@repo/drizzle#check-types": {
+      "dependsOn": ["^check-types"],
       "cache": false
     }
   }

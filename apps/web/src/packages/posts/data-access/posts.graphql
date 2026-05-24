@@ -1,0 +1,37 @@
+fragment Post on PostModel {
+  id
+  caption
+  createdAt
+  files {
+    id
+    url
+    uploadStatus
+    sortOrder
+  }
+}
+
+query Posts($pageSize: Int = 10, $cursor: String) {
+  posts(pageSize: $pageSize, cursor: $cursor) {
+    nodes {
+      ...Post
+    }
+    nextCursor
+    hasNextPage
+  }
+}
+
+query Post($id: ID!) {
+  post(id: $id) {
+    ...Post
+  }
+}
+
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+  }
+}
+
+mutation DeletePost($id: ID!) {
+  deletePost(id: $id)
+}

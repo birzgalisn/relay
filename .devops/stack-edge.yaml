@@ -52,7 +52,7 @@ services:
     networks:
       - relay_edge
     healthcheck:
-      test: [ 'CMD', 'traefik', 'healthcheck', '--ping' ]
+      test: [CMD, traefik, healthcheck, --ping]
       interval: 10s
       timeout: 5s
       retries: 5

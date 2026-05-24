@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router';
-
-import { Landing } from '../packages/landing';
+import { createFileRoute, Navigate } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
-  component() {
-    return <Landing />;
-  },
+  component: RedirectToPosts,
 });
+
+function RedirectToPosts() {
+  return <Navigate to="/posts" />;
+}
