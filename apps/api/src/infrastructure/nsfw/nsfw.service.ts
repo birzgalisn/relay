@@ -15,6 +15,9 @@ const moduleRequire = createRequire(__filename);
 
 const BLOCKED_NSFW_CLASSES = new Set<PredictionType['className']>(['Porn', 'Hentai']);
 
+/** Must match nsfwjs MobileNetV2 input; resize in sharp to avoid full-resolution TF tensors. */
+const NSFW_INPUT_SIZE = 224;
+
 const MOBILENET_V2_DIR = path.join(
   __dirname,
   '..',
@@ -39,6 +42,9 @@ export class NsfwService implements OnModuleInit, OnModuleDestroy {
   constructor(@Inject(nsfwConfig.KEY) private readonly nsfw: ConfigType<typeof nsfwConfig>) {}
 
   async onModuleInit(): Promise<void> {
+    sharp.cache(false);
+    sharp.concurrency(1);
+
     this.tf = await this.initWasmBackend();
     const modelHandler = await createNsfwModelIoHandler(this.tf);
     // nsfwjs accepts `tf.io.IOHandler` at runtime; typings only list model names/URLs.
@@ -69,22 +75,24 @@ export class NsfwService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async fileToTensor3d(filePath: string): Promise<tf.Tensor3D> {
-    const { data, info } = await sharp(filePath)
-      .ensureAlpha()
+    const { data } = await sharp(filePath)
+      .rotate()
+      .resize(NSFW_INPUT_SIZE, NSFW_INPUT_SIZE, { fit: 'fill' })
+      .removeAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
 
     const numChannels = 3;
-    const numPixels = info.width * info.height;
+    const numPixels = NSFW_INPUT_SIZE * NSFW_INPUT_SIZE;
     const values = new Int32Array(numPixels * numChannels);
 
     for (let i = 0; i < numPixels; i++) {
       for (let c = 0; c < numChannels; c++) {
-        values[i * numChannels + c] = data[i * 4 + c]!;
+        values[i * numChannels + c] = data[i * numChannels + c]!;
       }
     }
 
-    return this.tf.tensor3d(values, [info.height, info.width, numChannels], 'int32');
+    return this.tf.tensor3d(values, [NSFW_INPUT_SIZE, NSFW_INPUT_SIZE, numChannels], 'int32');
   }
 
   private async initWasmBackend(): Promise<typeof tf> {

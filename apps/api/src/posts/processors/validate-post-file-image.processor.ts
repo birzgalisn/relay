@@ -9,7 +9,7 @@ import {
 } from '../jobs/validate-post-file-image.job';
 import { ValidatePostFileImageUseCase } from '../use-cases/validate-post-file-image.use-case';
 
-@Processor(POST_FILE_IMAGE_VALIDATION_QUEUE)
+@Processor(POST_FILE_IMAGE_VALIDATION_QUEUE, { concurrency: 1 })
 export class ValidatePostFileImageProcessor extends WorkerHost {
   private readonly logger = new Logger(ValidatePostFileImageProcessor.name);
 
