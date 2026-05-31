@@ -38,7 +38,11 @@ export class PostFileResolver {
   url(@Parent() file: PostFileModel): string | null {
     const tusUploadId = file.tusUploadId;
 
-    if (file.uploadStatus !== PostFileUploadStatus.READY || !tusUploadId) {
+    const urlAllowed =
+      file.uploadStatus === PostFileUploadStatus.READY ||
+      file.uploadStatus === PostFileUploadStatus.PROCESSING;
+
+    if (!urlAllowed || !tusUploadId) {
       return null;
     }
 

@@ -4,6 +4,7 @@ import { DrizzleModule } from '@repo/drizzle';
 
 import { GraphqlModule } from './infrastructure/graphql/graphql.module';
 import { MediaModule } from './infrastructure/media/media.module';
+import { QueueModule } from './infrastructure/queue/queue.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 
 @Module({
@@ -13,6 +14,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
     }),
     DrizzleModule,
     RedisModule,
+    QueueModule,
     GraphqlModule,
     MediaModule,
   ],

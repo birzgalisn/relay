@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-alpine AS base
+FROM node:24-bookworm-slim AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -44,7 +44,12 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 FROM base AS runner
 
-RUN apk add --no-cache wget
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends wget \
+  && rm -rf /var/lib/apt/lists/*
+
+# pnpm deploy isolates @img packages; sharp's .node RPATH expects libvips as a sibling.
+ENV LD_LIBRARY_PATH=/app/node_modules/@img/sharp-libvips-linux-x64/lib
 
 USER node
 

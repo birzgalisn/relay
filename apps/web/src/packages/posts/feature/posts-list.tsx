@@ -138,12 +138,16 @@ export function PostsList() {
                           key: file.id,
                           src: file.url ?? '',
                           alt: caption,
+                          blurWhileProcessing:
+                            file.uploadStatus === PostFileUploadStatus.Processing,
                           emptyLabel:
                             file.uploadStatus === PostFileUploadStatus.Pending
                               ? 'Uploading...'
-                              : file.uploadStatus === PostFileUploadStatus.Failed
-                                ? 'Upload failed'
-                                : undefined,
+                              : file.uploadStatus === PostFileUploadStatus.Processing
+                                ? 'Checking image...'
+                                : file.uploadStatus === PostFileUploadStatus.Failed
+                                  ? 'Removed'
+                                  : undefined,
                         }))}
                       />
                     ) : (

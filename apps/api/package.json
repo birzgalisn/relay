@@ -4,6 +4,7 @@
   "private": true,
   "files": [
     "dist",
+    "assets",
     "package.json"
   ],
   "scripts": {
@@ -39,6 +40,12 @@
     "graphql-redis-subscriptions": "catalog:",
     "graphql-subscriptions": "catalog:",
     "ioredis": "catalog:",
+    "nsfwjs": "catalog:",
+    "@tensorflow/tfjs": "catalog:",
+    "@tensorflow/tfjs-backend-wasm": "catalog:",
+    "@img/sharp-libvips-linux-x64": "catalog:",
+    "@img/sharp-linux-x64": "catalog:",
+    "sharp": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "zod": "catalog:"

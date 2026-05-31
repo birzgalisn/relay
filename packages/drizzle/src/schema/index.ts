@@ -12,12 +12,14 @@ import {
 
 export enum PostFileUploadStatus {
   PENDING = 'pending',
+  PROCESSING = 'processing',
   READY = 'ready',
   FAILED = 'failed',
 }
 
 export const postFileUploadStatusEnum = pgEnum('post_file_upload_status', [
   PostFileUploadStatus.PENDING,
+  PostFileUploadStatus.PROCESSING,
   PostFileUploadStatus.READY,
   PostFileUploadStatus.FAILED,
 ]);

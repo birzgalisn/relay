@@ -8,6 +8,8 @@ import type {
   TusUpload,
   TusUploadResult,
 } from '../../infrastructure/tus/interfaces/tus-upload-handler.interface';
+import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
+import { isImageMimeType } from '../util/is-image-mime-type';
 
 const tusUploadMetadataSchema = z.object({
   postId: z.uuid(),
@@ -17,7 +19,10 @@ const tusUploadMetadataSchema = z.object({
 
 @Injectable()
 export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUploadResult> {
-  constructor(private readonly drizzle: DrizzleService) {}
+  constructor(
+    private readonly drizzle: DrizzleService,
+    private readonly enqueueImageValidation: EnqueuePostFileImageValidationService,
+  ) {}
 
   async execute(upload: TusUpload): Promise<TusUploadResult> {
     const parsed = tusUploadMetadataSchema.safeParse(upload.metadata);
@@ -27,6 +32,15 @@ export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUpload
     }
 
     const { postId, sortOrder: sortOrderFromMeta } = parsed.data;
+
+    const mimeTypeRaw = upload.metadata?.filetype ?? upload.metadata?.contentType ?? null;
+    const mimeType = mimeTypeRaw === '' ? null : mimeTypeRaw;
+    const byteSize = upload.size ?? null;
+    const uploadStatus = isImageMimeType(mimeType)
+      ? PostFileUploadStatus.PROCESSING
+      : PostFileUploadStatus.READY;
+
+    let postFileIdForValidation: string | null = null;
 
     await this.drizzle.db.transaction(async (tx) => {
       const post = await tx.query.posts.findFirst({
@@ -47,15 +61,11 @@ export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUpload
         return;
       }
 
-      const mimeTypeRaw = upload.metadata?.filetype ?? upload.metadata?.contentType ?? null;
-      const mimeType = mimeTypeRaw === '' ? null : mimeTypeRaw;
-      const byteSize = upload.size ?? null;
-
       const readyPatch = {
         tusUploadId: upload.id,
         mimeType,
         byteSize,
-        uploadStatus: PostFileUploadStatus.READY,
+        uploadStatus,
       };
 
       if (sortOrderFromMeta !== undefined) {
@@ -69,6 +79,9 @@ export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUpload
 
         if (pendingSlot) {
           await tx.update(postFiles).set(readyPatch).where(eq(postFiles.id, pendingSlot.id));
+          if (uploadStatus === PostFileUploadStatus.PROCESSING) {
+            postFileIdForValidation = pendingSlot.id;
+          }
           return;
         }
 
@@ -77,19 +90,28 @@ export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUpload
         });
 
         if (!atSlot) {
-          await tx.insert(postFiles).values({
-            postId,
-            tusUploadId: upload.id,
-            sortOrder: sortOrderFromMeta,
-            mimeType,
-            byteSize,
-            uploadStatus: PostFileUploadStatus.READY,
-          });
+          const [inserted] = await tx
+            .insert(postFiles)
+            .values({
+              postId,
+              tusUploadId: upload.id,
+              sortOrder: sortOrderFromMeta,
+              mimeType,
+              byteSize,
+              uploadStatus,
+            })
+            .returning({ id: postFiles.id });
+          if (uploadStatus === PostFileUploadStatus.PROCESSING && inserted) {
+            postFileIdForValidation = inserted.id;
+          }
           return;
         }
 
         if (atSlot.tusUploadId == null) {
           await tx.update(postFiles).set(readyPatch).where(eq(postFiles.id, atSlot.id));
+          if (uploadStatus === PostFileUploadStatus.PROCESSING) {
+            postFileIdForValidation = atSlot.id;
+          }
           return;
         }
       }
@@ -101,15 +123,29 @@ export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUpload
 
       const sortOrder = (agg?.max ?? -1) + 1;
 
-      await tx.insert(postFiles).values({
-        postId,
-        tusUploadId: upload.id,
-        sortOrder,
-        mimeType,
-        byteSize,
-        uploadStatus: PostFileUploadStatus.READY,
-      });
+      const [inserted] = await tx
+        .insert(postFiles)
+        .values({
+          postId,
+          tusUploadId: upload.id,
+          sortOrder,
+          mimeType,
+          byteSize,
+          uploadStatus,
+        })
+        .returning({ id: postFiles.id });
+
+      if (uploadStatus === PostFileUploadStatus.PROCESSING && inserted) {
+        postFileIdForValidation = inserted.id;
+      }
     });
+
+    if (postFileIdForValidation) {
+      await this.enqueueImageValidation.enqueue({
+        postFileId: postFileIdForValidation,
+        tusUploadId: upload.id,
+      });
+    }
 
     return { handled: true };
   }

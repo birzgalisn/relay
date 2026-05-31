@@ -4,11 +4,24 @@ packages:
 
 injectWorkspacePackages: true
 
+supportedArchitectures:
+  os:
+    - current
+    - linux
+  cpu:
+    - current
+    - x64
+  libc:
+    - current
+    - glibc
+
 allowBuilds:
   '@apollo/protobufjs': true
   '@nestjs/core': true
   '@parcel/watcher': true
   '@swc/core': true
+  sharp: true
+  core-js: false
   esbuild: true
   msgpackr-extract: true
   unrs-resolver: true
@@ -71,6 +84,12 @@ catalog:
   graphql-subscriptions: ^3.0.0
   graphql-ws: ^6.0.8
   ioredis: ^5.10.1
+  nsfwjs: ^4.2.1
+  '@tensorflow/tfjs': ^4.22.0
+  '@tensorflow/tfjs-backend-wasm': ^4.22.0
+  sharp: ^0.34.5
+  '@img/sharp-libvips-linux-x64': 1.2.4
+  '@img/sharp-linux-x64': 0.34.5
   jest: ^30.4.2
   oxfmt: ^0.51.0
   oxlint: ^1.66.0
