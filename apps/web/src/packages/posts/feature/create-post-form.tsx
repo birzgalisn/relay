@@ -5,17 +5,15 @@ import { schemaResolver, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
 
+import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
 import { MediaGrid } from '../../../shared/ui/media-grid';
 import { isInstanceOfError } from '../../../shared/util/is-instance-of-error';
 import { CreatePostDocument, PostsDocument } from '../data-access/posts.generated';
 import { createPostFormSchema, type CreatePostFormValues } from '../util/create-post-form-schema';
 import { uploadPostFiles } from '../util/upload-post-files-tus';
 
-export type CreatePostFormProps = {
-  onPublished: () => void;
-};
-
-export function CreatePostForm({ onPublished }: CreatePostFormProps) {
+export function CreatePostForm() {
+  const handleClose = useClosePostsModal();
   const client = useApolloClient();
   const [busy, setBusy] = useState(false);
   /** Per-file upload percent while publishing; `null` when idle. */
@@ -100,7 +98,7 @@ export function CreatePostForm({ onPublished }: CreatePostFormProps) {
         variables: { cursor: null },
         fetchPolicy: 'network-only',
       });
-      onPublished();
+      handleClose();
     } catch (e) {
       notifications.show({
         title: 'Could not publish post',

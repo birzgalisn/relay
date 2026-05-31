@@ -3,9 +3,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { CreatePostModal } from '../../packages/posts';
 
 export const Route = createFileRoute('/posts/create')({
-  component: CreatePost,
+  component: CreatePostRoute,
 });
 
-function CreatePost() {
+function CreatePostRoute() {
   return <CreatePostModal />;
 }

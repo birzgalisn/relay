@@ -1,24 +1,23 @@
 import { useMutation } from '@apollo/client/react';
 import { Button, Group, Modal, Skeleton, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useNavigate } from '@tanstack/react-router';
 
+import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
 import { DeletePostDocument, PostsDocument, type PostQuery } from '../data-access/posts.generated';
+import { postModalProps } from '../util/modal-props';
 
 export type DeletePostModalProps = {
-  /** Route loader is still running — inline skeleton where the title will appear. */
+  /** Post query still in flight (route loader). */
   pending?: boolean;
-  post?: PostQuery['post'];
+  post?: PostQuery['post'] | null;
 };
 
 export function DeletePostModal({ pending = false, post }: DeletePostModalProps) {
-  const navigate = useNavigate();
-
+  const handleClose = useClosePostsModal();
   const [deletePost, { loading: deleting }] = useMutation(DeletePostDocument);
 
-  const goToList = () => {
-    void navigate({ to: '/posts', resetScroll: false });
-  };
+  const captionLabel = post?.caption?.trim() || 'Untitled';
+  const showPrimaryPrompt = pending || !!post;
 
   const handleConfirmDelete = async () => {
     if (!post) {
@@ -35,7 +34,7 @@ export function DeletePostModal({ pending = false, post }: DeletePostModalProps)
           },
         ],
       });
-      goToList();
+      handleClose();
     } catch {
       notifications.show({
         message: 'Could not delete post',
@@ -44,11 +43,8 @@ export function DeletePostModal({ pending = false, post }: DeletePostModalProps)
     }
   };
 
-  const captionLabel = post?.caption || 'Untitled';
-  const showPrimaryPrompt = pending || !!post;
-
   return (
-    <Modal opened onClose={goToList} title="Delete post?" centered closeOnClickOutside>
+    <Modal opened onClose={handleClose} title="Delete post?" {...postModalProps}>
       <Stack gap="md">
         <Text size="sm" component="div">
           {showPrimaryPrompt ? (
@@ -95,7 +91,7 @@ export function DeletePostModal({ pending = false, post }: DeletePostModalProps)
         ) : null}
 
         <Group justify="flex-end">
-          <Button variant="default" onClick={goToList} disabled={deleting}>
+          <Button variant="default" onClick={handleClose} disabled={deleting}>
             {pending || post ? 'Cancel' : 'Back to posts'}
           </Button>
           {!pending && post ? (
