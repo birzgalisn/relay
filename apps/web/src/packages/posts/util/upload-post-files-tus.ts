@@ -1,21 +1,18 @@
 import { DetailedError, Upload } from 'tus-js-client';
 
-import { getTusEndpoint } from '../../../shared/util/get-tus-endpoint';
+import { getPostFilesTusEndpoint } from './get-post-files-tus-endpoint';
 
 function formatTusFailure(err: unknown): Error {
   if (err instanceof DetailedError) {
-    const status = err.originalResponse?.getStatus();
-    const body = err.originalResponse?.getBody()?.trim().slice(0, 300);
-    const hint =
-      status != null || body
-        ? ` (${[status != null ? `HTTP ${String(status)}` : null, body || null].filter(Boolean).join(': ')})`
-        : '';
-    return new Error(`${err.message}${hint}`);
+    const message = err.originalResponse?.getBody()?.trim();
+    return new Error(message || 'Could not upload file. Please try again.');
   }
+
   if (err instanceof Error) {
     return err;
   }
-  return new Error(String(err));
+
+  return new Error('Could not upload file. Please try again.');
 }
 
 export type UploadPostFilesProgress = {
@@ -31,7 +28,7 @@ function uploadSingle(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const upload = new Upload(file, {
-      endpoint: getTusEndpoint(),
+      endpoint: getPostFilesTusEndpoint(),
       chunkSize: 5 * 1024 * 1024,
       retryDelays: [0, 1000, 3000],
       metadata: {

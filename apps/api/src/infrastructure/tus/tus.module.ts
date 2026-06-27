@@ -1,12 +1,11 @@
-import { DynamicModule, Global, Module, type Provider } from '@nestjs/common';
+import { DynamicModule, Module, type Provider } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
-import type { TusUploadHandler } from './interfaces/tus-upload-handler.interface';
+import type { TusRegisterAsyncOptions } from './interfaces/tus-register-async-options.interface';
 import type { TusOptions } from './interfaces/tus.interface';
 import { TusHook } from './tus.hook';
-import { TUS_OPTIONS, TUS_UPLOAD_HANDLERS } from './tus.tokens';
+import { TUS_OPTIONS } from './tus.tokens';
 
-@Global()
 @Module({})
 export class TusModule {
   static register(options: TusOptions): DynamicModule {
@@ -17,19 +16,18 @@ export class TusModule {
     };
   }
 
-  static registerAsync(options: {
-    imports?: DynamicModule['imports'];
-    inject?: any[];
-    useFactory: (...args: any[]) => TusOptions | Promise<TusOptions>;
-  }): DynamicModule {
+  static registerAsync<TArgs extends readonly unknown[]>(
+    asyncOptions: TusRegisterAsyncOptions<TArgs>,
+  ): DynamicModule {
     return {
       module: TusModule,
-      imports: options.imports ?? [],
+      imports: asyncOptions.imports ?? [],
       providers: [
+        ...(asyncOptions.providers ?? []),
         {
           provide: TUS_OPTIONS,
-          inject: options.inject ?? [],
-          useFactory: options.useFactory,
+          inject: asyncOptions.inject ? [...asyncOptions.inject] : [],
+          useFactory: asyncOptions.useFactory,
         },
         TusModule.tusHookProvider(),
       ],
@@ -40,12 +38,9 @@ export class TusModule {
   private static tusHookProvider(): Provider {
     return {
       provide: TusHook,
-      useFactory: (
-        opts: TusOptions,
-        httpAdapterHost: HttpAdapterHost,
-        handlers?: TusUploadHandler[],
-      ) => new TusHook(httpAdapterHost, opts, handlers),
-      inject: [TUS_OPTIONS, HttpAdapterHost, { token: TUS_UPLOAD_HANDLERS, optional: true }],
+      useFactory: (opts: TusOptions, httpAdapterHost: HttpAdapterHost) =>
+        new TusHook(httpAdapterHost, opts),
+      inject: [TUS_OPTIONS, HttpAdapterHost],
     };
   }
 }

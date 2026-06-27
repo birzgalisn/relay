@@ -1,8 +1,10 @@
 fragment Post on PostModel {
+  __typename
   id
   caption
   createdAt
   files {
+    __typename
     id
     url
     uploadStatus
@@ -12,6 +14,7 @@ fragment Post on PostModel {
 
 query Posts($pageSize: Int = 10, $cursor: String) {
   posts(pageSize: $pageSize, cursor: $cursor) {
+    __typename
     nodes {
       ...Post
     }
@@ -34,4 +37,31 @@ mutation CreatePost($input: CreatePostInput!) {
 
 mutation DeletePost($id: ID!) {
   deletePost(id: $id)
+}
+
+fragment PostFeedCreatedEvent on PostFeedCreated {
+  __typename
+  id
+  caption
+  createdAt
+  files {
+    __typename
+    id
+    url
+    uploadStatus
+    sortOrder
+  }
+}
+
+fragment PostFeedRemovedEvent on PostFeedRemoved {
+  __typename
+  id
+}
+
+subscription PostsFeed($pageSize: Int = 10) {
+  postsFeed(pageSize: $pageSize, cursor: null) {
+    __typename
+    ...PostFeedCreatedEvent
+    ...PostFeedRemovedEvent
+  }
 }

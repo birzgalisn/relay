@@ -1,4 +1,3 @@
-import { useQuery } from '@apollo/client/react';
 import {
   Anchor,
   Box,
@@ -12,48 +11,18 @@ import {
   Title,
 } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
-import { useCallback } from 'react';
 
 import { PostFileUploadStatus } from '../../../_generated/graphql-types';
 import { FeedShell } from '../../../shared/ui/feed-shell';
 import { MediaGrid } from '../../../shared/ui/media-grid';
 import { useInfiniteScroll } from '../../../shared/util/use-infinite-scroll';
-import { PostsDocument } from '../data-access/posts.generated';
+import { usePostsFeed } from '../hooks/use-posts-feed';
 
 export function PostsList() {
-  const { data, loading, error, fetchMore } = useQuery(PostsDocument, {
-    variables: { cursor: null },
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-  });
+  const { page, loading, error, loadMore, loadingMore } = usePostsFeed();
 
-  const page = data?.posts;
   const posts = page?.nodes ?? [];
   const hasNextPage = page?.hasNextPage ?? false;
-  const nextCursor = page?.nextCursor;
-  const loadingMore = loading && data != null;
-
-  const loadMore = useCallback(() => {
-    if (!hasNextPage || nextCursor == null || loadingMore) {
-      return;
-    }
-
-    void fetchMore({
-      variables: { cursor: nextCursor },
-      updateQuery: (prev, { fetchMoreResult }) => {
-        if (fetchMoreResult?.posts == null) {
-          return prev;
-        }
-
-        return {
-          posts: {
-            ...fetchMoreResult.posts,
-            nodes: [...prev.posts.nodes, ...fetchMoreResult.posts.nodes],
-          },
-        };
-      },
-    });
-  }, [fetchMore, hasNextPage, loadingMore, nextCursor]);
 
   useInfiniteScroll({
     hasMore: hasNextPage,
@@ -61,7 +30,7 @@ export function PostsList() {
     onLoadMore: loadMore,
   });
 
-  if (loading && !data) {
+  if (loading && !page) {
     return (
       <FeedShell>
         <Center py="xl">
@@ -71,7 +40,7 @@ export function PostsList() {
     );
   }
 
-  if (error && !data) {
+  if (error && !page) {
     return (
       <FeedShell>
         <Text c="red">{error.message}</Text>

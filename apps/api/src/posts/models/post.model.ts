@@ -18,4 +18,8 @@ export class PostModel {
 
   @Field(() => Date)
   updatedAt!: Date;
+
+  constructor(payload?: Partial<PostModel>) {
+    Object.assign(this, payload);
+  }
 }

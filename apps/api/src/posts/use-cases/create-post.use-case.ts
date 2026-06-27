@@ -1,9 +1,9 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DrizzleService, PostFileUploadStatus, postFiles, posts } from '@repo/drizzle';
+import { DrizzleService, postFiles, PostFileUploadStatus, posts, PostStatus } from '@repo/drizzle';
+import type { CreatePostInput } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
 import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
-import type { CreatePostInput } from '../interfaces/create-post.input';
 import { PostModel } from '../models/post.model';
 
 @Injectable()
@@ -11,13 +11,12 @@ export class CreatePostUseCase implements UseCase<CreatePostInput, PostModel> {
   constructor(private readonly drizzle: DrizzleService) {}
 
   async execute(input: CreatePostInput): Promise<PostModel> {
-    const fileCount = Math.min(100, Math.max(0, input.fileCount ?? 0));
-
     const row = await this.drizzle.db.transaction(async (tx) => {
       const [created] = await tx
         .insert(posts)
         .values({
           caption: input.caption ?? null,
+          status: PostStatus.PUBLISHING,
         })
         .returning();
 
@@ -25,9 +24,9 @@ export class CreatePostUseCase implements UseCase<CreatePostInput, PostModel> {
         throw new InternalServerErrorException('Failed to create post');
       }
 
-      if (fileCount > 0) {
+      if (input.fileCount > 0) {
         await tx.insert(postFiles).values(
-          Array.from({ length: fileCount }, (_, sortOrder) => ({
+          Array.from({ length: input.fileCount }, (_, sortOrder) => ({
             postId: created.id,
             sortOrder,
             uploadStatus: PostFileUploadStatus.PENDING,

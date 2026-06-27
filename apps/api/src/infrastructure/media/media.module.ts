@@ -3,16 +3,13 @@ import type { ConfigType } from '@nestjs/config';
 
 import { mediaConfig } from '../config/media.config';
 import { StaticFilesModule } from '../static-files/static-files.module';
-import { TusHandlersModule } from '../tus/tus-handlers.module';
-import { TusModule } from '../tus/tus.module';
-import { MediaCoreModule } from './media-core.module';
+import { MediaService } from './media.service';
 
 const mediaProvider = mediaConfig.asProvider();
 
 @Module({
   imports: [
-    MediaCoreModule,
-    TusHandlersModule,
+    ...mediaProvider.imports,
     StaticFilesModule.registerAsync({
       imports: mediaProvider.imports,
       inject: mediaProvider.inject,
@@ -23,18 +20,8 @@ const mediaProvider = mediaConfig.asProvider();
         };
       },
     }),
-    TusModule.registerAsync({
-      imports: [TusHandlersModule, ...mediaProvider.imports],
-      inject: mediaProvider.inject,
-      useFactory(media: ConfigType<typeof mediaConfig>) {
-        return {
-          root: media.root,
-          path: media.tusPath,
-          maxUploadBytes: media.maxUploadBytes,
-        };
-      },
-    }),
   ],
-  exports: [MediaCoreModule],
+  providers: [MediaService],
+  exports: [MediaService],
 })
 export class MediaModule {}

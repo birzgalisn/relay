@@ -4,7 +4,7 @@
   "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "API_BASE_URL"],
   "tasks": {
     "dev": {
-      "dependsOn": ["@repo/drizzle#db:sync", "api#build"],
+      "dependsOn": ["@repo/shared#build", "@repo/drizzle#db:sync", "api#build"],
       "cache": false,
       "persistent": true
     },
@@ -42,7 +42,7 @@
       "persistent": true
     },
     "api#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["@repo/shared#build", "^build"],
       "outputs": ["dist/**", "src/_generated/schema.graphql"]
     },
     "@repo/drizzle#build": {
@@ -69,6 +69,10 @@
     "api#check-types": {
       "dependsOn": ["^build", "^check-types"],
       "cache": false
+    },
+    "@repo/shared#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     },
     "@repo/drizzle#check-types": {
       "dependsOn": ["^check-types"],

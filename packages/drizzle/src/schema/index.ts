@@ -17,6 +17,12 @@ export enum PostFileUploadStatus {
   FAILED = 'failed',
 }
 
+export enum PostStatus {
+  PUBLISHING = 'publishing',
+  PUBLISHED = 'published',
+  MODERATED = 'moderated',
+}
+
 export const postFileUploadStatusEnum = pgEnum('post_file_upload_status', [
   PostFileUploadStatus.PENDING,
   PostFileUploadStatus.PROCESSING,
@@ -24,11 +30,18 @@ export const postFileUploadStatusEnum = pgEnum('post_file_upload_status', [
   PostFileUploadStatus.FAILED,
 ]);
 
+export const postStatusEnum = pgEnum('post_status', [
+  PostStatus.PUBLISHING,
+  PostStatus.PUBLISHED,
+  PostStatus.MODERATED,
+]);
+
 export const posts = pgTable(
   'post',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     caption: text('caption'),
+    status: postStatusEnum('status').notNull().default(PostStatus.PUBLISHING),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull().defaultNow(),
   },

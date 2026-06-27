@@ -7,13 +7,21 @@ import {
   validatePostFileImageJobSchema,
   type ValidatePostFileImageJob,
 } from '../jobs/validate-post-file-image.job';
+import { MarkPostFileReadyUseCase } from '../use-cases/mark-post-file-ready.use-case';
+import { MarkPostFileRejectedUseCase } from '../use-cases/mark-post-file-rejected.use-case';
+import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
 import { ValidatePostFileImageUseCase } from '../use-cases/validate-post-file-image.use-case';
 
 @Processor(POST_FILE_IMAGE_VALIDATION_QUEUE, { concurrency: 1 })
 export class ValidatePostFileImageProcessor extends WorkerHost {
   private readonly logger = new Logger(ValidatePostFileImageProcessor.name);
 
-  constructor(private readonly validatePostFileImage: ValidatePostFileImageUseCase) {
+  constructor(
+    private readonly validatePostFileImage: ValidatePostFileImageUseCase,
+    private readonly markPostFileReady: MarkPostFileReadyUseCase,
+    private readonly markPostFileRejected: MarkPostFileRejectedUseCase,
+    private readonly resolvePostStatus: ResolvePostStatusUseCase,
+  ) {
     super();
   }
 
@@ -25,6 +33,20 @@ export class ValidatePostFileImageProcessor extends WorkerHost {
       return;
     }
 
-    await this.validatePostFileImage.execute(parsed.data);
+    const result = await this.validatePostFileImage.execute(parsed.data);
+
+    if (!result) {
+      return;
+    }
+
+    const { postId, postFileId, safe, reason } = result;
+
+    if (safe) {
+      await this.markPostFileReady.execute(postFileId);
+    } else {
+      await this.markPostFileRejected.execute({ postFileId, reason });
+    }
+
+    await this.resolvePostStatus.execute(postId);
   }
 }

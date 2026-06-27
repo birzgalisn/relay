@@ -1,13 +1,12 @@
-import { Inject, Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { FileStore } from '@tus/file-store';
 import { Server } from '@tus/server';
 import type { FastifyInstance } from 'fastify';
 
-import type { TusUploadHandler } from './interfaces/tus-upload-handler.interface';
 import type { TusOptions } from './interfaces/tus.interface';
-import { TUS_UPLOAD_HANDLERS } from './tus.tokens';
+import { TUS_OPTIONS } from './tus.tokens';
 
 @Injectable()
 export class TusHook implements OnModuleInit {
@@ -15,10 +14,8 @@ export class TusHook implements OnModuleInit {
 
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
+    @Inject(TUS_OPTIONS)
     private readonly options: TusOptions,
-    @Optional()
-    @Inject(TUS_UPLOAD_HANDLERS)
-    private readonly uploadHandlers: TusUploadHandler[] = [],
   ) {}
 
   async onModuleInit() {
@@ -34,7 +31,7 @@ export class TusHook implements OnModuleInit {
       datastore: new FileStore({ directory: this.options.root }),
       maxSize: this.options.maxUploadBytes,
       /**
-       * Relative `Location` so the browser follows the same public host it used for `POST /files`
+       * Relative `Location` so the browser follows the same public host it used for `POST`
        * (avoids broken uploads when the API would otherwise emit an internal host behind Traefik/Docker).
        */
       relativeLocation: true,
@@ -42,14 +39,13 @@ export class TusHook implements OnModuleInit {
        * Use `Forwarded` / `X-Forwarded-*` when building absolute URLs where the server still emits them.
        */
       respectForwardedHeaders: true,
+      onUploadCreate: async (req, upload) => {
+        const result = await this.options.onUploadCreate?.(req, upload);
+        return result ?? {};
+      },
       onUploadFinish: async (req, upload) => {
-        for (const handler of this.uploadHandlers) {
-          const { handled } = await handler.onUpload(req, upload);
-          if (handled) {
-            return {};
-          }
-        }
-        return {};
+        const result = await this.options.onUploadFinish?.(req, upload);
+        return result ?? {};
       },
     });
 
@@ -78,6 +74,8 @@ export class TusHook implements OnModuleInit {
       },
     });
 
-    this.logger.log(`Tus server mounted at ${this.options.path} (storage: ${this.options.root})`);
+    this.logger.log(
+      `Handling file uploads at ${this.options.path} (storage: ${this.options.root})`,
+    );
   }
 }

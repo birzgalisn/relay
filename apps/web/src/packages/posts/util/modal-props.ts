@@ -1,6 +1,6 @@
 import type { ModalProps } from '@mantine/core';
 
-export const postModalProps = {
+export const POST_MODAL_PROPS = {
   centered: true,
   closeOnClickOutside: true,
   lockScroll: false,

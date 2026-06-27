@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
 import { PostModel } from '../models/post.model';
+import { isPublishedPost } from '../util/published-post.filter';
 
 @Injectable()
 export class GetPostUseCase implements UseCase<string, PostModel | null> {
@@ -19,7 +20,7 @@ export class GetPostUseCase implements UseCase<string, PostModel | null> {
       },
     });
 
-    if (!row) {
+    if (!row || !isPublishedPost(row.status)) {
       return null;
     }
 

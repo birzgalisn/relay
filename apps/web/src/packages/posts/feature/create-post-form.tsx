@@ -1,20 +1,27 @@
-import { useApolloClient, useMutation } from '@apollo/client/react';
+import { useMutation } from '@apollo/client/react';
 import { Box, Button, Group, Stack, Text, Textarea } from '@mantine/core';
 import { Dropzone, IMAGE_MIME_TYPE, type FileWithPath } from '@mantine/dropzone';
 import { schemaResolver, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { useEffect, useState } from 'react';
+import {
+  createPostFormSchema,
+  pluralize,
+  POST_FILE_MAX_UPLOAD_BYTES,
+  POST_FILE_MAX_UPLOAD_MIB,
+  POST_MAX_FILE_COUNT,
+  type CreatePostFormValues,
+} from '@repo/shared';
+import { useState } from 'react';
 
 import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
+import { useFilePreviewUrls } from '../../../shared/hooks/use-file-preview-urls';
 import { MediaGrid } from '../../../shared/ui/media-grid';
 import { isInstanceOfError } from '../../../shared/util/is-instance-of-error';
-import { CreatePostDocument, PostsDocument } from '../data-access/posts.generated';
-import { createPostFormSchema, type CreatePostFormValues } from '../util/create-post-form-schema';
+import { CreatePostDocument } from '../data-access/posts.generated';
 import { uploadPostFiles } from '../util/upload-post-files-tus';
 
 export function CreatePostForm() {
   const handleClose = useClosePostsModal();
-  const client = useApolloClient();
   const [busy, setBusy] = useState(false);
   /** Per-file upload percent while publishing; `null` when idle. */
   const [fileUploadPct, setFileUploadPct] = useState<number[] | null>(null);
@@ -32,19 +39,7 @@ export function CreatePostForm() {
 
   const files = form.values.files;
 
-  const imagePreviewUrls = files.map((file) =>
-    file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
-  );
-
-  useEffect(() => {
-    return () => {
-      for (const url of imagePreviewUrls) {
-        if (url) {
-          URL.revokeObjectURL(url);
-        }
-      }
-    };
-  }, [imagePreviewUrls]);
+  const imagePreviewUrls = useFilePreviewUrls(files);
 
   const dropFiles = (added: FileWithPath[]) => {
     form.setFieldValue('files', [...form.values.files, ...added]);
@@ -93,11 +88,6 @@ export function CreatePostForm() {
           return next;
         });
       });
-      await client.query({
-        query: PostsDocument,
-        variables: { cursor: null },
-        fetchPolicy: 'network-only',
-      });
       handleClose();
     } catch (e) {
       notifications.show({
@@ -120,6 +110,7 @@ export function CreatePostForm() {
             description="Optional"
             minRows={3}
             {...form.getInputProps('caption')}
+            disabled={busy}
           />
 
           <div>
@@ -128,8 +119,34 @@ export function CreatePostForm() {
             </Text>
             <Dropzone
               onDrop={dropFiles}
+              onReject={(rejections) => {
+                const rejectedFileNamesFor = (code: string) =>
+                  rejections
+                    .filter((r) => r.errors.some((e) => e.code === code))
+                    .map((r) => `'${r.file.name}'`)
+                    .join(', ');
+
+                const tooMany = rejectedFileNamesFor('too-many-files');
+                if (tooMany) {
+                  notifications.show({
+                    title: 'Too many files',
+                    message: `${tooMany} were not added (max ${POST_MAX_FILE_COUNT} ${pluralize(POST_MAX_FILE_COUNT, 'file')})`,
+                    color: 'red',
+                  });
+                }
+
+                const tooLarge = rejectedFileNamesFor('file-too-large');
+                if (tooLarge) {
+                  notifications.show({
+                    title: 'File too large',
+                    message: `${tooLarge} must be ${POST_FILE_MAX_UPLOAD_MIB} MiB or smaller`,
+                    color: 'red',
+                  });
+                }
+              }}
               accept={IMAGE_MIME_TYPE}
-              maxSize={20 * 1024 ** 2}
+              maxSize={POST_FILE_MAX_UPLOAD_BYTES}
+              maxFiles={POST_MAX_FILE_COUNT}
               disabled={busy}
             >
               <Text ta="center">Drop files here or click to select</Text>

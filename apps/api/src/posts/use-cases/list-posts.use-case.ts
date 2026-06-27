@@ -6,6 +6,7 @@ import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.in
 import type { ListPostsArgs } from '../interfaces/list-posts.args';
 import { PostPageModel } from '../models/post-page.model';
 import { PostModel } from '../models/post.model';
+import { andWherePostIsPublished } from '../util/published-post.filter';
 
 @Injectable()
 export class ListPostsUseCase implements UseCase<ListPostsArgs, PostPageModel> {
@@ -23,7 +24,7 @@ export class ListPostsUseCase implements UseCase<ListPostsArgs, PostPageModel> {
         this.drizzle.db.query.posts.findMany({
           limit,
           orderBy: (t, { desc: d }) => [d(t.createdAt), d(t.id)],
-          where,
+          where: andWherePostIsPublished(where),
           with: {
             files: {
               orderBy: (t, { asc }) => [asc(t.sortOrder)],

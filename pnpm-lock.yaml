@@ -328,6 +328,9 @@ importers:
       '@repo/drizzle':
         specifier: workspace:*
         version: link:../../packages/drizzle
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@tensorflow/tfjs':
         specifier: 'catalog:'
         version: 4.22.0(seedrandom@3.0.5)
@@ -455,6 +458,9 @@ importers:
       '@mantine/notifications':
         specifier: 'catalog:'
         version: 9.2.1(@mantine/core@9.2.1(@mantine/hooks@9.2.1(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mantine/hooks@9.2.1(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -649,6 +655,25 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.66.0
+
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@repo/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.0(tsx@4.22.3)(typescript@6.0.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   packages/typescript-config: {}
 

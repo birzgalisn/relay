@@ -1,55 +1,46 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { DrizzleService, PostFileUploadStatus, postFiles, posts } from '@repo/drizzle';
-import { and, eq, max } from 'drizzle-orm';
-import { z } from 'zod';
+import { Injectable } from '@nestjs/common';
+import { DrizzleService, postFiles, PostFileUploadStatus, posts } from '@repo/drizzle';
+import { Upload } from '@tus/server';
+import { and, eq } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
-import type {
-  TusUpload,
-  TusUploadResult,
-} from '../../infrastructure/tus/interfaces/tus-upload-handler.interface';
-import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
+import { TusError } from '../../infrastructure/tus/tus.error';
+import { formatZodErrorMessage } from '../../infrastructure/validation/format-zod-error-message';
+import type { ValidatePostFileImageJob } from '../jobs/validate-post-file-image.job';
+import { postFileTusUploadMetadataSchema } from '../schemas/post-file-tus-upload-metadata.schema';
 import { isImageMimeType } from '../util/is-image-mime-type';
+import { isPostAcceptingUploads } from '../util/post-status.util';
 
-const tusUploadMetadataSchema = z.object({
-  postId: z.uuid(),
-  /** Tus metadata values are strings (e.g. `"0"`); `sortOrder` is 0-based from the client. */
-  sortOrder: z.coerce.number().int().min(0).optional(),
-});
+export type FinishPostFileUploadResult = {
+  postId: string;
+  validationJob: ValidatePostFileImageJob | null;
+};
 
 @Injectable()
-export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUploadResult> {
-  constructor(
-    private readonly drizzle: DrizzleService,
-    private readonly enqueueImageValidation: EnqueuePostFileImageValidationService,
-  ) {}
+export class FinishPostFileUploadUseCase {
+  constructor(private readonly drizzle: DrizzleService) {}
 
-  async execute(upload: TusUpload): Promise<TusUploadResult> {
-    const parsed = tusUploadMetadataSchema.safeParse(upload.metadata);
+  async execute(upload: Upload): Promise<FinishPostFileUploadResult> {
+    const parsed = postFileTusUploadMetadataSchema.safeParse(upload.metadata);
 
     if (!parsed.success) {
-      return { handled: false };
+      throw new TusError(400, `Invalid upload metadata: ${formatZodErrorMessage(parsed.error)}`);
     }
 
-    const { postId, sortOrder: sortOrderFromMeta } = parsed.data;
+    const { postId, sortOrder, filetype } = parsed.data;
 
-    const mimeTypeRaw = upload.metadata?.filetype ?? upload.metadata?.contentType ?? null;
-    const mimeType = mimeTypeRaw === '' ? null : mimeTypeRaw;
     const byteSize = upload.size ?? null;
-    const uploadStatus = isImageMimeType(mimeType)
+    const uploadStatus = isImageMimeType(filetype)
       ? PostFileUploadStatus.PROCESSING
       : PostFileUploadStatus.READY;
 
-    let postFileIdForValidation: string | null = null;
-
-    await this.drizzle.db.transaction(async (tx) => {
+    const postFileIdForValidation = await this.drizzle.db.transaction(async (tx) => {
       const post = await tx.query.posts.findFirst({
         where: eq(posts.id, postId),
-        columns: { id: true },
+        columns: { id: true, status: true },
       });
 
-      if (!post) {
-        throw new NotFoundException(`Post ${postId} not found`);
+      if (!post || !isPostAcceptingUploads(post.status)) {
+        throw new TusError(404, `Post ${postId} not found or not accepting uploads`);
       }
 
       const existingByTus = await tx.query.postFiles.findFirst({
@@ -58,95 +49,42 @@ export class FinishPostFileUploadUseCase implements UseCase<TusUpload, TusUpload
       });
 
       if (existingByTus) {
-        return;
+        return null;
       }
 
-      const readyPatch = {
-        tusUploadId: upload.id,
-        mimeType,
-        byteSize,
-        uploadStatus,
-      };
+      const pendingSlot = await tx.query.postFiles.findFirst({
+        where: and(
+          eq(postFiles.postId, postId),
+          eq(postFiles.sortOrder, sortOrder),
+          eq(postFiles.uploadStatus, PostFileUploadStatus.PENDING),
+        ),
+      });
 
-      if (sortOrderFromMeta !== undefined) {
-        const pendingSlot = await tx.query.postFiles.findFirst({
-          where: and(
-            eq(postFiles.postId, postId),
-            eq(postFiles.sortOrder, sortOrderFromMeta),
-            eq(postFiles.uploadStatus, PostFileUploadStatus.PENDING),
-          ),
-        });
-
-        if (pendingSlot) {
-          await tx.update(postFiles).set(readyPatch).where(eq(postFiles.id, pendingSlot.id));
-          if (uploadStatus === PostFileUploadStatus.PROCESSING) {
-            postFileIdForValidation = pendingSlot.id;
-          }
-          return;
-        }
-
-        const atSlot = await tx.query.postFiles.findFirst({
-          where: and(eq(postFiles.postId, postId), eq(postFiles.sortOrder, sortOrderFromMeta)),
-        });
-
-        if (!atSlot) {
-          const [inserted] = await tx
-            .insert(postFiles)
-            .values({
-              postId,
-              tusUploadId: upload.id,
-              sortOrder: sortOrderFromMeta,
-              mimeType,
-              byteSize,
-              uploadStatus,
-            })
-            .returning({ id: postFiles.id });
-          if (uploadStatus === PostFileUploadStatus.PROCESSING && inserted) {
-            postFileIdForValidation = inserted.id;
-          }
-          return;
-        }
-
-        if (atSlot.tusUploadId == null) {
-          await tx.update(postFiles).set(readyPatch).where(eq(postFiles.id, atSlot.id));
-          if (uploadStatus === PostFileUploadStatus.PROCESSING) {
-            postFileIdForValidation = atSlot.id;
-          }
-          return;
-        }
+      if (!pendingSlot) {
+        throw new TusError(
+          409,
+          `No pending upload slot at sortOrder ${sortOrder} for post ${postId}`,
+        );
       }
 
-      const [agg] = await tx
-        .select({ max: max(postFiles.sortOrder) })
-        .from(postFiles)
-        .where(eq(postFiles.postId, postId));
-
-      const sortOrder = (agg?.max ?? -1) + 1;
-
-      const [inserted] = await tx
-        .insert(postFiles)
-        .values({
-          postId,
+      await tx
+        .update(postFiles)
+        .set({
           tusUploadId: upload.id,
-          sortOrder,
-          mimeType,
+          mimeType: filetype,
           byteSize,
           uploadStatus,
         })
-        .returning({ id: postFiles.id });
+        .where(eq(postFiles.id, pendingSlot.id));
 
-      if (uploadStatus === PostFileUploadStatus.PROCESSING && inserted) {
-        postFileIdForValidation = inserted.id;
-      }
+      return uploadStatus === PostFileUploadStatus.PROCESSING ? pendingSlot.id : null;
     });
 
-    if (postFileIdForValidation) {
-      await this.enqueueImageValidation.enqueue({
-        postFileId: postFileIdForValidation,
-        tusUploadId: upload.id,
-      });
-    }
-
-    return { handled: true };
+    return {
+      postId,
+      validationJob: postFileIdForValidation
+        ? { postFileId: postFileIdForValidation, tusUploadId: upload.id }
+        : null,
+    };
   }
 }

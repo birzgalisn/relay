@@ -3,8 +3,8 @@ import { Button, Group, Modal, Skeleton, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 
 import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
-import { DeletePostDocument, PostsDocument, type PostQuery } from '../data-access/posts.generated';
-import { postModalProps } from '../util/modal-props';
+import { DeletePostDocument, type PostQuery } from '../data-access/posts.generated';
+import { POST_MODAL_PROPS } from '../util/modal-props';
 
 export type DeletePostModalProps = {
   /** Post query still in flight (route loader). */
@@ -27,12 +27,6 @@ export function DeletePostModal({ pending = false, post }: DeletePostModalProps)
     try {
       await deletePost({
         variables: { id: post.id },
-        refetchQueries: [
-          {
-            query: PostsDocument,
-            variables: { cursor: null },
-          },
-        ],
       });
       handleClose();
     } catch {
@@ -44,7 +38,7 @@ export function DeletePostModal({ pending = false, post }: DeletePostModalProps)
   };
 
   return (
-    <Modal opened onClose={handleClose} title="Delete post?" {...postModalProps}>
+    <Modal opened onClose={handleClose} title="Delete post?" {...POST_MODAL_PROPS}>
       <Stack gap="md">
         <Text size="sm" component="div">
           {showPrimaryPrompt ? (

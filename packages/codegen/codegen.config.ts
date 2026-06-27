@@ -33,6 +33,7 @@ const config = {
       },
       plugins: ['typescript-operations', 'typed-document-node'],
       config: {
+        skipTypename: false,
         enumsAsConst: true,
         scalars,
       },

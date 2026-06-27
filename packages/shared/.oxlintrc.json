@@ -1,0 +1,3 @@
+{
+  "extends": ["../oxlint-config/src/library.json"]
+}
