@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DrizzleService, posts } from '@repo/drizzle';
 
-import { PaginatedIteratorFactory } from '../../infrastructure/iterator/paginated-iterator.factory';
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import { PaginatedIteratorFactory } from '../../infrastructure/iterator/factories/paginated-iterator.factory';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import type { ListPostsArgs } from '../interfaces/list-posts.args';
 import type { PostPage } from '../models/post-page.model';
 import { Post } from '../models/post.model';

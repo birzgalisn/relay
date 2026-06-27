@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { CursorModule } from '../cursor/cursor.module';
-import { PaginatedIteratorFactory } from './paginated-iterator.factory';
+import { PaginatedIteratorFactory } from './factories/paginated-iterator.factory';
 
 @Module({
   imports: [CursorModule],

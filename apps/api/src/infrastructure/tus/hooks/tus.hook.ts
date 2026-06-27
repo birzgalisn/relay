@@ -5,8 +5,8 @@ import { FileStore } from '@tus/file-store';
 import { Server } from '@tus/server';
 import type { FastifyInstance } from 'fastify';
 
-import type { TusOptions } from './interfaces/tus.interface';
-import { TUS_OPTIONS } from './tus.tokens';
+import type { TusOptions } from '../interfaces/tus.interface';
+import { TUS_OPTIONS } from '../tokens/tus.tokens';
 
 @Injectable()
 export class TusHook implements OnModuleInit {

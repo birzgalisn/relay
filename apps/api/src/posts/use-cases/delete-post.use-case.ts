@@ -2,9 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DrizzleService, postFiles, posts } from '@repo/drizzle';
 import { eq } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
-import { TusArtifactsService } from '../../infrastructure/tus/tus-artifacts.service';
-import { PostEventsPubSubService } from '../post-events-pubsub.service';
+import { TusArtifactsService } from '../../infrastructure/tus-artifacts/services/tus-artifacts.service';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
+import { PostEventsPubSubService } from '../services/post-events-pubsub.service';
 
 @Injectable()
 export class DeletePostUseCase implements UseCase<string> {

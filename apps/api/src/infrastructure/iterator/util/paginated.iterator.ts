@@ -1,9 +1,9 @@
-import type { CursorService } from '../cursor/cursor.service';
-import type { CursorPayload } from '../cursor/interfaces/cursor-payload.schema';
-import type { CursorTable } from '../cursor/interfaces/cursor-table.interface';
-import type { Iterator } from './interfaces/iterator.interface';
-import type { PaginatedIteratorOptions } from './interfaces/paginated-iterator-options.interface';
-import type { PaginatedPage } from './interfaces/paginated-page.interface';
+import type { CursorPayload } from '../../cursor/interfaces/cursor-payload.schema';
+import type { CursorTable } from '../../cursor/interfaces/cursor-table.interface';
+import type { CursorService } from '../../cursor/services/cursor.service';
+import type { Iterator } from '../interfaces/iterator.interface';
+import type { PaginatedIteratorOptions } from '../interfaces/paginated-iterator-options.interface';
+import type { PaginatedPage } from '../interfaces/paginated-page.interface';
 
 export class PaginatedIterator<T extends CursorTable> implements Iterator<T> {
   private static defaultGetCursor<T extends CursorTable>(item: T): CursorPayload {

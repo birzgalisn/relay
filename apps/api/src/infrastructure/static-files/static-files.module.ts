@@ -1,28 +1,25 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
-import { FastifyStaticHook } from './fastify-static.hook';
+import { FastifyStaticHook } from './hooks/fastify-static.hook';
+import type { StaticFilesRegisterAsyncOptions } from './interfaces/static-files-register-async-options.interface';
 import type { StaticFilesOptions } from './interfaces/static-files.interface';
-
-export interface StaticFilesRegisterAsyncOptions {
-  imports?: DynamicModule['imports'];
-  inject?: any[];
-  useFactory: (...args: any[]) => StaticFilesOptions | Promise<StaticFilesOptions>;
-}
-
-export const STATIC_FILES_OPTIONS = Symbol('STATIC_FILES_OPTIONS');
+import { STATIC_FILES_OPTIONS } from './tokens/static-files.tokens';
 
 @Module({})
 export class StaticFilesModule {
-  static registerAsync(asyncOptions: StaticFilesRegisterAsyncOptions): DynamicModule {
+  static registerAsync<TArgs extends readonly unknown[]>(
+    asyncOptions: StaticFilesRegisterAsyncOptions<TArgs>,
+  ): DynamicModule {
     return {
       module: StaticFilesModule,
       imports: asyncOptions.imports ?? [],
       providers: [
+        ...(asyncOptions.providers ?? []),
         {
           provide: STATIC_FILES_OPTIONS,
+          inject: asyncOptions.inject ? [...asyncOptions.inject] : [],
           useFactory: asyncOptions.useFactory,
-          inject: asyncOptions.inject ?? [],
         },
         {
           provide: FastifyStaticHook,

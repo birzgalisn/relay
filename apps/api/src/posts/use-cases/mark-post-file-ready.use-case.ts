@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService, PostFileUploadStatus, postFiles } from '@repo/drizzle';
 import { and, eq } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 
 @Injectable()
 export class MarkPostFileReadyUseCase implements UseCase<string, void> {

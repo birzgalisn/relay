@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService, posts } from '@repo/drizzle';
 import { eq } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import { Post } from '../models/post.model';
 import { isPublishedPost } from '../util/published-post.filter';
 

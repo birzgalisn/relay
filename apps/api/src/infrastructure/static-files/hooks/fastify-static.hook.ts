@@ -4,7 +4,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import type { FastifyInstance } from 'fastify';
 
-import type { StaticFilesOptions } from './interfaces/static-files.interface';
+import type { StaticFilesOptions } from '../interfaces/static-files.interface';
 
 @Injectable()
 export class FastifyStaticHook implements OnModuleInit {

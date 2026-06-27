@@ -3,7 +3,7 @@ import type { ConfigType } from '@nestjs/config';
 
 import { mediaConfig } from '../config/media.config';
 import { StaticFilesModule } from '../static-files/static-files.module';
-import { MediaService } from './media.service';
+import { MediaService } from './services/media.service';
 
 const mediaProvider = mediaConfig.asProvider();
 

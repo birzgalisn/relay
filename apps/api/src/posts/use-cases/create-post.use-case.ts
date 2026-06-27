@@ -3,7 +3,7 @@ import { DrizzleService, postFiles, PostFileUploadStatus, posts, PostStatus } fr
 import type { CreatePostInput } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import { Post } from '../models/post.model';
 
 @Injectable()

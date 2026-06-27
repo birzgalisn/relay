@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 
-import { mediaConfig } from '../config/media.config';
+import { mediaConfig } from '../../config/media.config';
 
 @Injectable()
 export class MediaService {

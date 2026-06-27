@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
@@ -8,8 +9,8 @@ import type { PredictionType } from 'nsfwjs';
 import { load } from 'nsfwjs/core';
 import sharp from 'sharp';
 
-import { nsfwConfig } from '../config/nsfw.config';
-import { createNsfwModelIoHandler } from './create-nsfw-model-io-handler';
+import { nsfwConfig } from '../../config/nsfw.config';
+import { mobilenetV2Model } from '../models/mobilenet-v2.model';
 
 const moduleRequire = createRequire(__filename);
 
@@ -20,6 +21,7 @@ const NSFW_INPUT_SIZE = 224;
 
 const MOBILENET_V2_DIR = path.join(
   __dirname,
+  '..',
   '..',
   '..',
   '..',
@@ -46,7 +48,7 @@ export class NsfwService implements OnModuleInit, OnModuleDestroy {
     sharp.concurrency(1);
 
     this.tf = await this.initWasmBackend();
-    const modelHandler = await createNsfwModelIoHandler(this.tf);
+    const modelHandler = await this.createModelIoHandler(this.tf);
     // nsfwjs accepts `tf.io.IOHandler` at runtime; typings only list model names/URLs.
     this.model = await load(modelHandler as unknown as string);
     this.logger.log(`NSFWJS model loaded (${MOBILENET_V2_DIR})`);
@@ -93,6 +95,31 @@ export class NsfwService implements OnModuleInit, OnModuleDestroy {
     }
 
     return this.tf.tensor3d(values, [NSFW_INPUT_SIZE, NSFW_INPUT_SIZE, numChannels], 'int32');
+  }
+
+  private async createModelIoHandler(tfns: typeof tf): Promise<tf.io.IOHandler> {
+    const shardBuffers: Buffer[] = [];
+
+    for (const group of mobilenetV2Model.weightsManifest) {
+      for (const shardPath of group.paths) {
+        shardBuffers.push(await readFile(path.join(MOBILENET_V2_DIR, shardPath)));
+      }
+    }
+
+    const totalBytes = shardBuffers.reduce((sum, buf) => sum + buf.byteLength, 0);
+    const weightData = new Uint8Array(totalBytes);
+    let offset = 0;
+
+    for (const buf of shardBuffers) {
+      weightData.set(buf, offset);
+      offset += buf.byteLength;
+    }
+
+    return tfns.io.fromMemory({
+      modelTopology: mobilenetV2Model.modelTopology,
+      weightSpecs: mobilenetV2Model.weightsManifest.flatMap((group) => group.weights),
+      weightData: weightData.buffer,
+    });
   }
 
   private async initWasmBackend(): Promise<typeof tf> {

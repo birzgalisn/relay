@@ -1,10 +1,5 @@
-import type { DynamicModule, InjectionToken, Provider } from '@nestjs/common';
-
+import type { RegisterAsyncOptions } from '../../../shared/interfaces/register-async-options.interface';
 import type { TusOptions } from './tus.interface';
 
-export interface TusRegisterAsyncOptions<Args extends readonly unknown[] = readonly unknown[]> {
-  imports?: DynamicModule['imports'];
-  inject?: InjectionToken[];
-  providers?: Provider[];
-  useFactory: (...args: Args) => TusOptions | Promise<TusOptions>;
-}
+export type TusRegisterAsyncOptions<Args extends readonly unknown[] = readonly unknown[]> =
+  RegisterAsyncOptions<Args, TusOptions>;

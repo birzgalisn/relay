@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { mediaConfig } from '../config/media.config';
-import { TusArtifactsService } from './tus-artifacts.service';
+import { TusArtifactsService } from './services/tus-artifacts.service';
 
 const mediaProvider = mediaConfig.asProvider();
 

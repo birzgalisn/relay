@@ -1,7 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { DrizzleService } from '@repo/drizzle';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 
 @Injectable()
 export class CheckDatabaseReachableUseCase implements UseCase {

@@ -1,7 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 
-import { RedisService } from '../../infrastructure/redis/redis.service';
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import { RedisService } from '../../infrastructure/redis/services/redis.service';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 
 @Injectable()
 export class CheckRedisReachableUseCase implements UseCase {

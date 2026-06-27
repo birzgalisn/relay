@@ -1,0 +1,1 @@
+export const STATIC_FILES_OPTIONS = Symbol('STATIC_FILES_OPTIONS');

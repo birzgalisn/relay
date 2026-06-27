@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 
 import { redisConfig } from '../config/redis.config';
-import { RedisService } from './redis.service';
+import { RedisService } from './services/redis.service';
 
 const redisFromConfig = redisConfig.asProvider();
 

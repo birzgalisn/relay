@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService, posts, PostStatus } from '@repo/drizzle';
 import { and, eq, inArray } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import type { Post } from '../models/post.model';
-import { PostEventsPubSubService } from '../post-events-pubsub.service';
+import { PostEventsPubSubService } from '../services/post-events-pubsub.service';
 import {
   allPostFilesReady,
   hasFailedPostFiles,

@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
-import { POST_FILE_IMAGE_VALIDATION_QUEUE } from '../../infrastructure/queue/queue.tokens';
+import { POST_FILE_IMAGE_VALIDATION_QUEUE } from '../../infrastructure/queue/tokens/queue.tokens';
 import {
   VALIDATE_POST_FILE_IMAGE_JOB_NAME,
   type ValidatePostFileImageJob,

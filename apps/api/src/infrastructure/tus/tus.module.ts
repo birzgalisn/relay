@@ -1,10 +1,10 @@
 import { DynamicModule, Module, type Provider } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
+import { TusHook } from './hooks/tus.hook';
 import type { TusRegisterAsyncOptions } from './interfaces/tus-register-async-options.interface';
 import type { TusOptions } from './interfaces/tus.interface';
-import { TusHook } from './tus.hook';
-import { TUS_OPTIONS } from './tus.tokens';
+import { TUS_OPTIONS } from './tokens/tus.tokens';
 
 @Module({})
 export class TusModule {

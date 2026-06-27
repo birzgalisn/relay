@@ -3,8 +3,8 @@ import { DrizzleService, postFiles, PostFileUploadStatus, posts } from '@repo/dr
 import { Upload } from '@tus/server';
 import { and, eq } from 'drizzle-orm';
 
-import { TusError } from '../../infrastructure/tus/tus.error';
-import { formatZodErrorMessage } from '../../infrastructure/validation/format-zod-error-message';
+import { TusError } from '../../infrastructure/tus/util/tus.error';
+import { formatZodErrorMessage } from '../../infrastructure/validation/util/format-zod-error-message';
 import type { ValidatePostFileImageJob } from '../jobs/validate-post-file-image.job';
 import { postFileTusUploadMetadataSchema } from '../schemas/post-file-tus-upload-metadata.schema';
 import { isImageMimeType } from '../util/is-image-mime-type';

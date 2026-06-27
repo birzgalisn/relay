@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { POST_FILE_MAX_UPLOAD_BYTES } from '@repo/shared';
 
-import { mediaConfig } from '../infrastructure/config/media.config';
-import { TusModule } from '../infrastructure/tus/tus.module';
+import { mediaConfig } from '../../infrastructure/config/media.config';
+import { TusModule } from '../../infrastructure/tus/tus.module';
+import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
+import { FinishPostFileUploadUseCase } from '../use-cases/finish-post-file-upload.use-case';
+import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
 import { PostFileUploadModule } from './post-file-upload.module';
-import { EnqueuePostFileImageValidationService } from './services/enqueue-post-file-image-validation.service';
-import { FinishPostFileUploadUseCase } from './use-cases/finish-post-file-upload.use-case';
-import { ResolvePostStatusUseCase } from './use-cases/resolve-post-status.use-case';
 
 /** Dedicated tus endpoint for post file uploads (not shared with other upload domains). */
 export const POST_FILES_TUS_PATH = '/posts/files';

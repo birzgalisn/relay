@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { and, eq, lt, or, type SQL } from 'drizzle-orm';
 
-import { cursorPayloadSchema, type CursorPayload } from './interfaces/cursor-payload.schema';
-import type { CursorTableColumns } from './interfaces/cursor-table.interface';
+import { cursorPayloadSchema, type CursorPayload } from '../interfaces/cursor-payload.schema';
+import type { CursorTableColumns } from '../interfaces/cursor-table.interface';
 
 @Injectable()
 export class CursorService {

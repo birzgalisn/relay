@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 
-import { PostEventsPubSubService } from './post-events-pubsub.service';
+import { PostEventsPubSubService } from '../services/post-events-pubsub.service';
 
 @Global()
 @Module({

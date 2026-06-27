@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 
-import { POST_FILE_IMAGE_VALIDATION_QUEUE } from '../../infrastructure/queue/queue.tokens';
+import { POST_FILE_IMAGE_VALIDATION_QUEUE } from '../../infrastructure/queue/tokens/queue.tokens';
 import {
   validatePostFileImageJobSchema,
   type ValidatePostFileImageJob,

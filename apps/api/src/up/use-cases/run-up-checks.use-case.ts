@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import { UpStatus } from '../enums/up-status.enum';
 import { CheckDatabaseReachableUseCase } from './check-database-reachable.use-case';
 import { CheckRedisReachableUseCase } from './check-redis-reachable.use-case';

@@ -4,7 +4,7 @@ import * as nodePath from 'node:path';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 
-import { mediaConfig } from '../config/media.config';
+import { mediaConfig } from '../../config/media.config';
 
 /** Best-effort removal of Tus file-store binary + `.json` metadata (`@tus/file-store` layout) */
 @Injectable()

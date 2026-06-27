@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleService, PostFileUploadStatus, postFiles } from '@repo/drizzle';
 import { and, eq } from 'drizzle-orm';
 
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 
 export type MarkPostFileRejectedInput = {
   postFileId: string;
@@ -26,6 +26,6 @@ export class MarkPostFileRejectedUseCase implements UseCase<MarkPostFileRejected
         ),
       );
 
-    this.logger.log(`Post file ${postFileId} rejected: ${reason}`);
+    this.logger.log(`Post file rejected: ${reason}`);
   }
 }

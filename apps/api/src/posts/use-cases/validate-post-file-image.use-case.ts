@@ -6,8 +6,8 @@ import { DrizzleService, PostFileUploadStatus, postFiles } from '@repo/drizzle';
 import { eq } from 'drizzle-orm';
 
 import { mediaConfig } from '../../infrastructure/config/media.config';
-import { NsfwService } from '../../infrastructure/nsfw/nsfw.service';
-import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
+import { NsfwService } from '../../infrastructure/nsfw/services/nsfw.service';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import type { ValidatePostFileImageJob } from '../jobs/validate-post-file-image.job';
 
 export type ValidatePostFileImageResult = {

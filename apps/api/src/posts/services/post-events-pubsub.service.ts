@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 
-import type { PostFeedUpdatedPayload } from './interfaces/post-feed-updated-payload.interface';
-import { PostCreated } from './models/post-created.model';
-import { PostRemoved } from './models/post-removed.model';
-import type { Post } from './models/post.model';
+import type { PostFeedUpdatedPayload } from '../interfaces/post-feed-updated-payload.interface';
+import { PostCreated } from '../models/post-created.model';
+import { PostRemoved } from '../models/post-removed.model';
+import type { Post } from '../models/post.model';
 
 const POST_FEED_UPDATED = 'postFeedUpdated';
 

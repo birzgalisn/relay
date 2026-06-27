@@ -8,7 +8,7 @@ import type { PostFeedUpdatedPayload } from './interfaces/post-feed-updated-payl
 import { PostEventUnion } from './models/post-event.union';
 import { PostPage } from './models/post-page.model';
 import { Post } from './models/post.model';
-import { PostEventsPubSubService } from './post-events-pubsub.service';
+import { PostEventsPubSubService } from './services/post-events-pubsub.service';
 import { CreatePostUseCase } from './use-cases/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/delete-post.use-case';
 import { GetPostUseCase } from './use-cases/get-post.use-case';

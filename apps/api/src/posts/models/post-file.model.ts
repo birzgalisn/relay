@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 
-import { MediaService } from '../../infrastructure/media/media.service';
+import { MediaService } from '../../infrastructure/media/services/media.service';
 import { PostFileUploadStatus } from '../enums/file-upload-status.enum';
 
 @ObjectType('PostFile')
