@@ -3,8 +3,8 @@ import { useQuery } from '@apollo/client/react';
 import { useCallback, useEffect, useEffectEvent } from 'react';
 
 import { POSTS_LIST_VARIABLES } from '../constants';
-import { updatePostsFromFeedEvent } from '../data-access/posts-feed-cache';
 import { PostsDocument, PostsFeedDocument } from '../data-access/posts.generated';
+import { updatePostsFromFeedEvent } from '../util/update-posts-from-feed-event';
 
 export function usePostsFeed() {
   const { data, loading, error, fetchMore, networkStatus, subscribeToMore } = useQuery(

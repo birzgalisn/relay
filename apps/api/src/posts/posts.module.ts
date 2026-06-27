@@ -5,9 +5,9 @@ import { IteratorModule } from '../infrastructure/iterator/iterator.module';
 import { MediaModule } from '../infrastructure/media/media.module';
 import { TusArtifactsModule } from '../infrastructure/tus/tus-artifacts.module';
 import { PostFileResolver } from './models/post-file.model';
+import { PostEventsPubSubModule } from './post-events-pubsub.module';
 import { PostFileUploadModule } from './post-file-upload.module';
 import { PostFilesTusModule } from './post-files-tus.module';
-import { PostsFeedPubSubModule } from './posts-feed-pubsub.module';
 import { PostsResolver } from './posts.resolver';
 import { CreatePostUseCase } from './use-cases/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/delete-post.use-case';
@@ -23,7 +23,7 @@ const mediaProvider = mediaConfig.asProvider();
     TusArtifactsModule,
     PostFileUploadModule,
     PostFilesTusModule,
-    PostsFeedPubSubModule,
+    PostEventsPubSubModule,
     ...mediaProvider.imports,
   ],
   providers: [

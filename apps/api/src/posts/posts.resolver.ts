@@ -4,10 +4,11 @@ import { createPostInputSchema, type CreatePostInput } from '@repo/shared';
 import { createZodValidationPipe } from '../infrastructure/validation/create-zod-validation-pipe';
 import { CreatePostInput as CreatePostInputType } from './interfaces/create-post.input';
 import { ListPostsArgs } from './interfaces/list-posts.args';
-import { PostFeedEventUnion, type PostFeedEventModel } from './models/post-feed-event.union';
-import { PostPageModel } from './models/post-page.model';
-import { PostModel } from './models/post.model';
-import { PostsFeedPubSubService } from './posts-feed-pubsub.service';
+import type { PostFeedUpdatedPayload } from './interfaces/post-feed-updated-payload.interface';
+import { PostEventUnion } from './models/post-event.union';
+import { PostPage } from './models/post-page.model';
+import { Post } from './models/post.model';
+import { PostEventsPubSubService } from './post-events-pubsub.service';
 import { CreatePostUseCase } from './use-cases/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/delete-post.use-case';
 import { GetPostUseCase } from './use-cases/get-post.use-case';
@@ -20,20 +21,20 @@ export class PostsResolver {
     private readonly createPostUseCase: CreatePostUseCase,
     private readonly getPostUseCase: GetPostUseCase,
     private readonly deletePostUseCase: DeletePostUseCase,
-    private readonly postsFeedPubSub: PostsFeedPubSubService,
+    private readonly postEventsPubSub: PostEventsPubSubService,
   ) {}
 
-  @Query(() => PostPageModel)
-  posts(@Args() args: ListPostsArgs): Promise<PostPageModel> {
+  @Query(() => PostPage)
+  posts(@Args() args: ListPostsArgs): Promise<PostPage> {
     return this.listPostsUseCase.execute(args);
   }
 
-  @Query(() => PostModel, { nullable: true })
-  post(@Args('id', { type: () => ID }) id: string): Promise<PostModel | null> {
+  @Query(() => Post, { nullable: true })
+  post(@Args('id', { type: () => ID }) id: string): Promise<Post | null> {
     return this.getPostUseCase.execute(id);
   }
 
-  @Mutation(() => PostModel)
+  @Mutation(() => Post)
   createPost(
     @Args(
       'input',
@@ -41,7 +42,7 @@ export class PostsResolver {
       createZodValidationPipe(createPostInputSchema),
     )
     input: CreatePostInput,
-  ): Promise<PostModel> {
+  ): Promise<Post> {
     return this.createPostUseCase.execute(input);
   }
 
@@ -51,10 +52,10 @@ export class PostsResolver {
     return true;
   }
 
-  @Subscription(() => PostFeedEventUnion, {
-    resolve: (payload: { postFeedUpdated: PostFeedEventModel }) => payload.postFeedUpdated,
+  @Subscription(() => PostEventUnion, {
+    resolve: (payload: PostFeedUpdatedPayload) => payload.postFeedUpdated,
   })
   postsFeed(@Args() _args: ListPostsArgs) {
-    return this.postsFeedPubSub.postFeedUpdated();
+    return this.postEventsPubSub.postFeedUpdated();
   }
 }

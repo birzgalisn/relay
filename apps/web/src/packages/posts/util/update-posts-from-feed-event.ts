@@ -5,7 +5,7 @@ import type {
   PostsFeedSubscription,
   PostsQuery,
   PostsQueryVariables,
-} from './posts.generated';
+} from '../data-access/posts.generated';
 
 export const updatePostsFromFeedEvent: SubscribeToMoreUpdateQueryFn<
   PostsQuery,
@@ -19,10 +19,10 @@ export const updatePostsFromFeedEvent: SubscribeToMoreUpdateQueryFn<
   const { posts: page } = options.previousData;
   const event = options.subscriptionData.data.postsFeed;
 
-  if (event.__typename === 'PostFeedCreated') {
+  if (event.__typename === 'PostCreated') {
     const post = {
       ...event,
-      __typename: 'PostModel',
+      __typename: 'Post',
     } satisfies PostFragment;
 
     return {

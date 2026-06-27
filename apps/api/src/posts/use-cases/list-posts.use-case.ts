@@ -4,19 +4,19 @@ import { DrizzleService, posts } from '@repo/drizzle';
 import { PaginatedIteratorFactory } from '../../infrastructure/iterator/paginated-iterator.factory';
 import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
 import type { ListPostsArgs } from '../interfaces/list-posts.args';
-import { PostPageModel } from '../models/post-page.model';
-import { PostModel } from '../models/post.model';
+import type { PostPage } from '../models/post-page.model';
+import { Post } from '../models/post.model';
 import { andWherePostIsPublished } from '../util/published-post.filter';
 
 @Injectable()
-export class ListPostsUseCase implements UseCase<ListPostsArgs, PostPageModel> {
+export class ListPostsUseCase implements UseCase<ListPostsArgs, PostPage> {
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly paginated: PaginatedIteratorFactory,
   ) {}
 
-  execute({ pageSize, cursor }: ListPostsArgs): Promise<PostPageModel> {
-    const iterator = this.paginated.create<PostModel>({
+  execute({ pageSize, cursor }: ListPostsArgs): Promise<PostPage> {
+    const iterator = this.paginated.create<Post>({
       pageSize,
       initialCursor: cursor,
       table: posts,

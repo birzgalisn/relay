@@ -4,14 +4,14 @@ import { eq } from 'drizzle-orm';
 
 import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
 import { TusArtifactsService } from '../../infrastructure/tus/tus-artifacts.service';
-import { PostsFeedPubSubService } from '../posts-feed-pubsub.service';
+import { PostEventsPubSubService } from '../post-events-pubsub.service';
 
 @Injectable()
 export class DeletePostUseCase implements UseCase<string> {
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly tusArtifacts: TusArtifactsService,
-    private readonly postsFeedPubSub: PostsFeedPubSubService,
+    private readonly postEventsPubSub: PostEventsPubSubService,
   ) {}
 
   async execute(id: string): Promise<void> {
@@ -33,6 +33,6 @@ export class DeletePostUseCase implements UseCase<string> {
     });
 
     await Promise.all(tusIds.map((tusUploadId) => this.tusArtifacts.remove(tusUploadId)));
-    await this.postsFeedPubSub.publishRemoved(id);
+    await this.postEventsPubSub.publishRemoved(id);
   }
 }

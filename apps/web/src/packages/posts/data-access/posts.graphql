@@ -1,4 +1,4 @@
-fragment Post on PostModel {
+fragment Post on Post {
   __typename
   id
   caption
@@ -39,7 +39,7 @@ mutation DeletePost($id: ID!) {
   deletePost(id: $id)
 }
 
-fragment PostFeedCreatedEvent on PostFeedCreated {
+fragment PostCreatedEvent on PostCreated {
   __typename
   id
   caption
@@ -53,7 +53,7 @@ fragment PostFeedCreatedEvent on PostFeedCreated {
   }
 }
 
-fragment PostFeedRemovedEvent on PostFeedRemoved {
+fragment PostRemovedEvent on PostRemoved {
   __typename
   id
 }
@@ -61,7 +61,7 @@ fragment PostFeedRemovedEvent on PostFeedRemoved {
 subscription PostsFeed($pageSize: Int = 10) {
   postsFeed(pageSize: $pageSize, cursor: null) {
     __typename
-    ...PostFeedCreatedEvent
-    ...PostFeedRemovedEvent
+    ...PostCreatedEvent
+    ...PostRemovedEvent
   }
 }

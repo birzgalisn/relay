@@ -1,10 +1,10 @@
 import { Field, ID, Int, ObjectType, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 
 import { MediaService } from '../../infrastructure/media/media.service';
-import { PostFileUploadStatus } from '../enums/post-file-upload-status.enum';
+import { PostFileUploadStatus } from '../enums/file-upload-status.enum';
 
-@ObjectType('PostFileModel')
-export class PostFileModel {
+@ObjectType('PostFile')
+export class PostFile {
   @Field(() => ID)
   id!: string;
 
@@ -30,12 +30,12 @@ export class PostFileModel {
   url?: string | null;
 }
 
-@Resolver(() => PostFileModel)
+@Resolver(() => PostFile)
 export class PostFileResolver {
   constructor(private readonly media: MediaService) {}
 
   @ResolveField(() => String, { nullable: true })
-  url(@Parent() file: PostFileModel): string | null {
+  url(@Parent() file: PostFile): string | null {
     const tusUploadId = file.tusUploadId;
 
     const urlAllowed = file.uploadStatus === PostFileUploadStatus.READY;

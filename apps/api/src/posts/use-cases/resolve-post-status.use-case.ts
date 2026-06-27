@@ -3,8 +3,8 @@ import { DrizzleService, posts, PostStatus } from '@repo/drizzle';
 import { and, eq, inArray } from 'drizzle-orm';
 
 import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
-import type { PostModel } from '../models/post.model';
-import { PostsFeedPubSubService } from '../posts-feed-pubsub.service';
+import type { Post } from '../models/post.model';
+import { PostEventsPubSubService } from '../post-events-pubsub.service';
 import {
   allPostFilesReady,
   hasFailedPostFiles,
@@ -16,7 +16,7 @@ import {
 export class ResolvePostStatusUseCase implements UseCase<string, void> {
   constructor(
     private readonly drizzle: DrizzleService,
-    private readonly postsFeedPubSub: PostsFeedPubSubService,
+    private readonly postEventsPubSub: PostEventsPubSubService,
   ) {}
 
   async execute(postId: string): Promise<void> {
@@ -52,11 +52,11 @@ export class ResolvePostStatusUseCase implements UseCase<string, void> {
 
       await tx.update(posts).set({ status: PostStatus.PUBLISHED }).where(eq(posts.id, postId));
 
-      return post satisfies PostModel;
+      return post satisfies Post;
     });
 
     if (publishedPost) {
-      await this.postsFeedPubSub.publishCreated(publishedPost);
+      await this.postEventsPubSub.publishCreated(publishedPost);
     }
   }
 }

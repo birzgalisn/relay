@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
 
-import { PostFileUploadStatus } from '../../../_generated/graphql-types';
+import { FileUploadStatus } from '../../../_generated/graphql-types';
 import { FeedShell } from '../../../shared/ui/feed-shell';
 import { MediaGrid } from '../../../shared/ui/media-grid';
 import { useInfiniteScroll } from '../../../shared/util/use-infinite-scroll';
@@ -107,14 +107,13 @@ export function PostsList() {
                           key: file.id,
                           src: file.url ?? '',
                           alt: caption,
-                          blurWhileProcessing:
-                            file.uploadStatus === PostFileUploadStatus.Processing,
+                          blurWhileProcessing: file.uploadStatus === FileUploadStatus.Processing,
                           emptyLabel:
-                            file.uploadStatus === PostFileUploadStatus.Pending
+                            file.uploadStatus === FileUploadStatus.Pending
                               ? 'Uploading...'
-                              : file.uploadStatus === PostFileUploadStatus.Processing
+                              : file.uploadStatus === FileUploadStatus.Processing
                                 ? 'Checking image...'
-                                : file.uploadStatus === PostFileUploadStatus.Failed
+                                : file.uploadStatus === FileUploadStatus.Failed
                                   ? 'Removed'
                                   : undefined,
                         }))}

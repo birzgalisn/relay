@@ -4,13 +4,13 @@ import type { CreatePostInput } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
 import type { UseCase } from '../../infrastructure/shared/interfaces/use-case.interface';
-import { PostModel } from '../models/post.model';
+import { Post } from '../models/post.model';
 
 @Injectable()
-export class CreatePostUseCase implements UseCase<CreatePostInput, PostModel> {
+export class CreatePostUseCase implements UseCase<CreatePostInput, Post> {
   constructor(private readonly drizzle: DrizzleService) {}
 
-  async execute(input: CreatePostInput): Promise<PostModel> {
+  async execute(input: CreatePostInput): Promise<Post> {
     const row = await this.drizzle.db.transaction(async (tx) => {
       const [created] = await tx
         .insert(posts)

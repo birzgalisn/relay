@@ -1,17 +1,17 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
-import { PostFileModel } from './post-file.model';
+import { PostFile } from './post-file.model';
 
-@ObjectType('PostModel')
-export class PostModel {
+@ObjectType('Post')
+export class Post {
   @Field(() => ID)
   id!: string;
 
   @Field(() => String, { nullable: true })
   caption!: string | null;
 
-  @Field(() => [PostFileModel])
-  files!: PostFileModel[];
+  @Field(() => [PostFile])
+  files!: PostFile[];
 
   @Field(() => Date)
   createdAt!: Date;
@@ -19,7 +19,7 @@ export class PostModel {
   @Field(() => Date)
   updatedAt!: Date;
 
-  constructor(payload?: Partial<PostModel>) {
+  constructor(payload?: Partial<Post>) {
     Object.assign(this, payload);
   }
 }

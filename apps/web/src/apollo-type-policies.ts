@@ -35,7 +35,7 @@ const postFieldPolicy: FieldPolicy<Post, Post, Reference | undefined> = {
     if (typeof args?.id !== 'string') {
       return undefined;
     }
-    return toReference({ __typename: 'PostModel', id: args.id });
+    return toReference({ __typename: 'Post', id: args.id });
   },
 };
 

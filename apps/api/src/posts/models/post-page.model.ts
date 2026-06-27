@@ -1,11 +1,11 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
-import { PostModel } from './post.model';
+import { Post } from './post.model';
 
 @ObjectType('PostPage')
-export class PostPageModel {
-  @Field(() => [PostModel])
-  nodes!: PostModel[];
+export class PostPage {
+  @Field(() => [Post])
+  nodes!: Post[];
 
   @Field(() => String, { nullable: true })
   nextCursor!: string | null;
