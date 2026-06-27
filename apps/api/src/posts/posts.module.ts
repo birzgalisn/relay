@@ -5,6 +5,7 @@ import { IteratorModule } from '../infrastructure/iterator/iterator.module';
 import { MediaModule } from '../infrastructure/media/media.module';
 import { TusArtifactsModule } from '../infrastructure/tus-artifacts/tus-artifacts.module';
 import { PostFileResolver } from './models/post-file.model';
+import { ModeratedPostCleanupModule } from './modules/moderated-post-cleanup.module';
 import { PostEventsPubSubModule } from './modules/post-events-pubsub.module';
 import { PostFileUploadModule } from './modules/post-file-upload.module';
 import { PostFilesTusModule } from './modules/post-files-tus.module';
@@ -23,6 +24,7 @@ const mediaProvider = mediaConfig.asProvider();
     TusArtifactsModule,
     PostFileUploadModule,
     PostFilesTusModule,
+    ModeratedPostCleanupModule,
     PostEventsPubSubModule,
     ...mediaProvider.imports,
   ],

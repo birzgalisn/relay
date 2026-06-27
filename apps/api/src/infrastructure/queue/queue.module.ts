@@ -3,7 +3,10 @@ import { Global, Module } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 
 import { redisConfig } from '../config/redis.config';
-import { POST_FILE_IMAGE_VALIDATION_QUEUE } from './tokens/queue.tokens';
+import {
+  MODERATED_POST_CLEANUP_QUEUE,
+  POST_FILE_IMAGE_VALIDATION_QUEUE,
+} from './tokens/queue.tokens';
 
 const redisFromConfig = redisConfig.asProvider();
 
@@ -17,7 +20,10 @@ const redisFromConfig = redisConfig.asProvider();
         connection: { url: redis.url },
       }),
     }),
-    BullModule.registerQueue({ name: POST_FILE_IMAGE_VALIDATION_QUEUE }),
+    BullModule.registerQueue(
+      { name: POST_FILE_IMAGE_VALIDATION_QUEUE },
+      { name: MODERATED_POST_CLEANUP_QUEUE },
+    ),
   ],
   exports: [BullModule],
 })
