@@ -29,9 +29,6 @@ COPY --from=pruner /app/out/full/ .
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV NODE_ENV=production
-ENV DATABASE_URL="postgresql://required:for@drizzle:5432/init"
-ENV REDIS_URL="redis://:not@real:6379"
-ENV API_BASE_URL="http://localhost:3000"
 
 RUN pnpm exec turbo run build --filter=web...
 

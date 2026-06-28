@@ -43,7 +43,12 @@
     },
     "api#build": {
       "dependsOn": ["@repo/shared#build", "^build"],
-      "outputs": ["dist/**", "src/_generated/schema.graphql"]
+      "outputs": ["dist/**"]
+    },
+    "api#generate:schema": {
+      "dependsOn": ["api#build"],
+      "outputs": ["src/_generated/schema.graphql"],
+      "cache": false
     },
     "@repo/drizzle#build": {
       "dependsOn": ["^build"],

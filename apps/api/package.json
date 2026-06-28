@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "nest start --watch --no-shell",
     "dev:debug": "nest start --debug --watch --no-shell",
-    "build": "tsdown && node dist/write-graphql-schema.js",
+    "build": "tsdown",
+    "generate:schema": "node dist/write-graphql-schema.js",
     "check-types": "tsc --noEmit",
     "clean": "rm -rf dist node_modules .turbo coverage src/_generated tsconfig.tsbuildinfo",
     "start": "node dist/main.js",

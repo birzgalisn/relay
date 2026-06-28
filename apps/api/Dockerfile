@@ -31,9 +31,6 @@ COPY --from=pruner /app/out/full/ .
 # ENV TURBO_TEAM=$TURBO_TEAM
 
 ENV NODE_ENV=production
-ENV DATABASE_URL="postgresql://required:for@drizzle:5432/init"
-ENV REDIS_URL="redis://:not@real:6379"
-ENV API_BASE_URL="http://localhost:3000"
 
 RUN pnpm exec turbo run build --filter=api...
 
