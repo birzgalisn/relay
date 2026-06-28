@@ -1,0 +1,20 @@
+fragment MediaStorageStatus on MediaStorage {
+  __typename
+  totalBytes
+  usedBytes
+  availableBytes
+  reserveBytes
+  uploadAllowed
+}
+
+query MediaStorage {
+  mediaStorage {
+    ...MediaStorageStatus
+  }
+}
+
+subscription MediaStorageUpdated {
+  mediaStorageUpdated {
+    ...MediaStorageStatus
+  }
+}

@@ -10,6 +10,7 @@ import { PostsModule } from '../../posts/posts.module';
 import { UpModule } from '../../up/up.module';
 import { appConfig } from '../config/app.config';
 import { NodeEnv } from '../config/interfaces/app-env.interface';
+import { MediaModule } from '../media/media.module';
 
 const appEnvFromConfig = appConfig.asProvider();
 
@@ -35,6 +36,7 @@ const appEnvFromConfig = appConfig.asProvider();
       },
     }),
     UpModule,
+    MediaModule,
     PostsModule,
   ],
 })

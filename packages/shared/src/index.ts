@@ -1,4 +1,17 @@
-export { BYTES_PER_MIB } from './file/constants/file-size.constants';
+export {
+  BYTES_PER_GIB,
+  BYTES_PER_MIB,
+  STORAGE_RESERVE_BYTES,
+  STORAGE_RESERVE_MIB,
+} from './file/constants/file-size.constants';
+export {
+  formatStorageCaption,
+  formatStorageTooltipDetail,
+  formatStorageWarning,
+  getBudgetBarPendingPct,
+  getDiskBarUsedPct,
+  getUploadableFreeBytes,
+} from './file/util/format-byte-size';
 export {
   POST_FILE_MAX_UPLOAD_BYTES,
   POST_FILE_MAX_UPLOAD_MIB,

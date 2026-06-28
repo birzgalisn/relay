@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DrizzleService, postFiles, posts } from '@repo/drizzle';
 import { eq } from 'drizzle-orm';
 
+import { MediaStorageService } from '../../infrastructure/media/services/media-storage.service';
 import { TusArtifactsService } from '../../infrastructure/tus-artifacts/services/tus-artifacts.service';
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import { PostEventsPubSubService } from '../services/post-events-pubsub.service';
@@ -12,6 +13,7 @@ export class DeletePostUseCase implements UseCase<string> {
     private readonly drizzle: DrizzleService,
     private readonly tusArtifacts: TusArtifactsService,
     private readonly postEventsPubSub: PostEventsPubSubService,
+    private readonly mediaStorage: MediaStorageService,
   ) {}
 
   async execute(id: string): Promise<void> {
@@ -34,5 +36,6 @@ export class DeletePostUseCase implements UseCase<string> {
 
     await Promise.all(tusIds.map((tusUploadId) => this.tusArtifacts.remove(tusUploadId)));
     await this.postEventsPubSub.publishRemoved(id);
+    await this.mediaStorage.publishCurrent();
   }
 }

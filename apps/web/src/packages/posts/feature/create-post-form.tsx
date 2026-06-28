@@ -11,17 +11,20 @@ import {
   POST_MAX_FILE_COUNT,
   type CreatePostFormValues,
 } from '@repo/shared';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
 import { useFilePreviewUrls } from '../../../shared/hooks/use-file-preview-urls';
+import { useMediaStorage } from '../../../shared/hooks/use-media-storage';
 import { MediaGrid } from '../../../shared/ui/media-grid';
+import { MediaStorageIndicator } from '../../../shared/ui/media-storage-indicator';
 import { isInstanceOfError } from '../../../shared/util/is-instance-of-error';
 import { CreatePostDocument } from '../data-access/posts.generated';
 import { uploadPostFiles } from '../util/upload-post-files-tus';
 
 export function CreatePostForm() {
   const handleClose = useClosePostsModal();
+  const { uploadsBlocked, exceedsFreeSpace } = useMediaStorage();
   const [busy, setBusy] = useState(false);
   /** Per-file upload percent while publishing; `null` when idle. */
   const [fileUploadPct, setFileUploadPct] = useState<number[] | null>(null);
@@ -38,6 +41,8 @@ export function CreatePostForm() {
   });
 
   const files = form.values.files;
+  const pendingBytes = useMemo(() => files.reduce((total, file) => total + file.size, 0), [files]);
+  const publishDisabled = uploadsBlocked || exceedsFreeSpace(pendingBytes);
 
   const imagePreviewUrls = useFilePreviewUrls(files);
 
@@ -103,6 +108,7 @@ export function CreatePostForm() {
 
   return (
     <Stack gap="md">
+      <MediaStorageIndicator pendingBytes={pendingBytes} />
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
           <Textarea
@@ -173,7 +179,7 @@ export function CreatePostForm() {
           </div>
 
           <Group justify="flex-end">
-            <Button type="submit" loading={busy}>
+            <Button type="submit" loading={busy} disabled={publishDisabled}>
               Publish
             </Button>
           </Group>

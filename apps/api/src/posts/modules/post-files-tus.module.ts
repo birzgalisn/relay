@@ -3,6 +3,8 @@ import type { ConfigType } from '@nestjs/config';
 import { POST_FILE_MAX_UPLOAD_BYTES } from '@repo/shared';
 
 import { mediaConfig } from '../../infrastructure/config/media.config';
+import { MediaModule } from '../../infrastructure/media/media.module';
+import { MediaStorageService } from '../../infrastructure/media/services/media-storage.service';
 import { TusModule } from '../../infrastructure/tus/tus.module';
 import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
 import { FinishPostFileUploadUseCase } from '../use-cases/finish-post-file-upload.use-case';
@@ -17,24 +19,34 @@ const mediaProvider = mediaConfig.asProvider();
 @Module({
   imports: [
     PostFileUploadModule,
+    MediaModule,
     TusModule.registerAsync({
-      imports: [PostFileUploadModule, ...mediaProvider.imports],
+      imports: [PostFileUploadModule, MediaModule, ...mediaProvider.imports],
       inject: [
         FinishPostFileUploadUseCase,
         EnqueuePostFileImageValidationService,
         ResolvePostStatusUseCase,
+        MediaStorageService,
         ...mediaProvider.inject,
       ],
       useFactory(
         finishPostFileUpload: FinishPostFileUploadUseCase,
         enqueueImageValidation: EnqueuePostFileImageValidationService,
         resolvePostStatus: ResolvePostStatusUseCase,
+        mediaStorage: MediaStorageService,
         media: ConfigType<typeof mediaConfig>,
       ) {
         return {
           root: media.root,
           path: POST_FILES_TUS_PATH,
           maxUploadBytes: POST_FILE_MAX_UPLOAD_BYTES,
+          async onUploadCreate(_req, upload) {
+            if (upload.size) {
+              await mediaStorage.assertUploadAllowed(upload.size);
+            }
+
+            return {};
+          },
           async onUploadFinish(_req, upload) {
             const { postId, validationJob } = await finishPostFileUpload.execute(upload);
 
@@ -43,6 +55,8 @@ const mediaProvider = mediaConfig.asProvider();
             }
 
             await resolvePostStatus.execute(postId);
+            await mediaStorage.publishCurrent();
+
             return {};
           },
         };

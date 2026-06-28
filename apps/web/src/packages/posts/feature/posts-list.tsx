@@ -15,6 +15,7 @@ import { Link } from '@tanstack/react-router';
 import { FileUploadStatus } from '../../../_generated/graphql-types';
 import { FeedShell } from '../../../shared/ui/feed-shell';
 import { MediaGrid } from '../../../shared/ui/media-grid';
+import { MediaStorageIndicator } from '../../../shared/ui/media-storage-indicator';
 import { useInfiniteScroll } from '../../../shared/util/use-infinite-scroll';
 import { usePostsFeed } from '../hooks/use-posts-feed';
 
@@ -59,6 +60,8 @@ export function PostsList() {
             </Button>
           </Link>
         </Group>
+
+        <MediaStorageIndicator />
 
         <Stack gap="lg" pb="md">
           {posts.length === 0 ? (
