@@ -8,7 +8,7 @@ export {
   formatStorageCaption,
   formatStorageTooltipDetail,
   formatStorageWarning,
-  getBudgetBarPendingPct,
+  getDiskBarPendingPct,
   getDiskBarUsedPct,
   getUploadableFreeBytes,
 } from './file/util/format-byte-size';

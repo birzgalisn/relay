@@ -17,17 +17,13 @@ export function getDiskBarUsedPct(totalBytes: number, usedBytes: number): number
   return Math.min(100, (usedBytes / totalBytes) * 100);
 }
 
-/** Selected share of uploadable space (create-post preview). */
-export function getBudgetBarPendingPct(freeBytes: number, pendingBytes: number): number {
-  if (pendingBytes <= 0) {
+/** Selected share of the full disk (create-post preview). */
+export function getDiskBarPendingPct(totalBytes: number, pendingBytes: number): number {
+  if (pendingBytes <= 0 || totalBytes <= 0) {
     return 0;
   }
 
-  if (freeBytes <= 0) {
-    return 100;
-  }
-
-  return Math.min(100, (pendingBytes / freeBytes) * 100);
+  return Math.min(100, (pendingBytes / totalBytes) * 100);
 }
 
 function formatGib(bytes: number): string {

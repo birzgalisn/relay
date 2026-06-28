@@ -3,7 +3,7 @@ import {
   formatStorageCaption,
   formatStorageTooltipDetail,
   formatStorageWarning,
-  getBudgetBarPendingPct,
+  getDiskBarPendingPct,
   getDiskBarUsedPct,
   getUploadableFreeBytes,
 } from '@repo/shared';
@@ -28,28 +28,19 @@ export function MediaStorageIndicator({ pendingBytes = 0 }: MediaStorageIndicato
   const warning = formatStorageWarning(exceedsFree, !uploadAllowed);
   const previewingUpload = pendingBytes > 0;
 
-  const body = previewingUpload ? (
+  const body = (
     <>
-      <Text size="xs" c="dimmed">
-        Room for this post
-      </Text>
-      <Progress.Root size="sm">
-        <Progress.Section
-          value={getBudgetBarPendingPct(freeBytes, pendingBytes)}
-          color={exceedsFree ? 'red' : 'orange'}
-        />
-      </Progress.Root>
       <Text size="xs" c="dimmed">
         {formatStorageCaption(freeBytes, totalBytes, pendingBytes)}
       </Text>
-    </>
-  ) : (
-    <>
-      <Text size="xs" c="dimmed">
-        {formatStorageCaption(freeBytes, totalBytes)}
-      </Text>
       <Progress.Root size="sm">
         <Progress.Section value={getDiskBarUsedPct(totalBytes, usedBytes)} color="blue" />
+        {previewingUpload ? (
+          <Progress.Section
+            value={getDiskBarPendingPct(totalBytes, pendingBytes)}
+            color={exceedsFree ? 'red' : 'orange'}
+          />
+        ) : null}
       </Progress.Root>
     </>
   );
