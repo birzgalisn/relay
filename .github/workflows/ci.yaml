@@ -77,6 +77,10 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Generate GraphQL schema
+        if: inputs.app == 'web'
+        run: pnpm exec turbo run generate:schema --filter=api
+
       - name: Lint and typecheck
         run: |
           set -euo pipefail

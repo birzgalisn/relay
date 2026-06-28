@@ -55,11 +55,11 @@
       "outputs": ["dist/**"]
     },
     "@repo/codegen#generate": {
-      "dependsOn": ["api#generate:schema"],
+      "dependsOn": ["api#build"],
       "cache": false
     },
     "@repo/codegen#dev": {
-      "dependsOn": ["api#generate:schema"],
+      "dependsOn": ["api#build"],
       "cache": false,
       "persistent": true
     },
