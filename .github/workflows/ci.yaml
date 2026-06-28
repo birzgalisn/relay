@@ -35,9 +35,33 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-      REDIS_URL: redis://:ci@localhost:6379
+      REDIS_URL: redis://localhost:6379
       API_BASE_URL: ${{ vars.API_BASE_URL }}
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+
+    services:
+      postgres:
+        image: postgres:18.3-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8.6-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -70,6 +94,34 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      REDIS_URL: redis://localhost:6379
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+
+    services:
+      postgres:
+        image: postgres:18.3-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8.6-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
 
     strategy:
       matrix:
@@ -78,6 +130,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+        if: inputs.app == 'web'
+
+      - uses: actions/setup-node@v6
+        if: inputs.app == 'web'
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Generate GraphQL schema
+        if: inputs.app == 'web'
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
+          pnpm exec turbo run generate:schema --filter=api
 
       - name: Image root
         id: image_root
