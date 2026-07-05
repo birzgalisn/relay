@@ -7,10 +7,7 @@ export const corsEnvSchema = z.object({
 export type CorsEnv = z.infer<typeof corsEnvSchema>;
 
 export interface CorsEnvConfig {
-  origin: true | string[];
-  methods: string[];
-  allowedHeaders: string[];
-  exposedHeaders: string[];
+  cname: string;
 }
 
 export type CorsEnvNamespace = { cors: CorsEnvConfig };
