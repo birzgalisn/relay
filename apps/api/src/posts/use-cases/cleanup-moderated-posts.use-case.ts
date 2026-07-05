@@ -1,5 +1,6 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleService, posts, PostStatus } from '@repo/drizzle';
+import { AppErrorCode, isAppError } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
@@ -30,7 +31,7 @@ export class CleanupModeratedPostsUseCase implements UseCase<void, CleanupModera
         await this.deletePost.execute(row.id);
         deleted++;
       } catch (error) {
-        if (error instanceof NotFoundException) {
+        if (isAppError(error) && error.code === AppErrorCode.NOT_FOUND) {
           continue;
         }
 

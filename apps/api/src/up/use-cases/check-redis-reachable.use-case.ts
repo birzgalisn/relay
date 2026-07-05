@@ -1,4 +1,5 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AppError } from '@repo/shared';
 
 import { RedisService } from '../../infrastructure/redis/services/redis.service';
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
@@ -11,7 +12,7 @@ export class CheckRedisReachableUseCase implements UseCase {
     try {
       await this.redis.client.ping();
     } catch {
-      throw new ServiceUnavailableException('Redis unreachable');
+      throw AppError.serviceUnavailable('Redis unreachable');
     }
   }
 }

@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DrizzleService, postFiles, PostFileUploadStatus, posts, PostStatus } from '@repo/drizzle';
-import type { CreatePostInput } from '@repo/shared';
+import { Injectable } from '@nestjs/common';
+import { DrizzleService, postFiles, posts, PostStatus } from '@repo/drizzle';
+import { AppError, type CreatePostInput } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
@@ -21,16 +21,14 @@ export class CreatePostUseCase implements UseCase<CreatePostInput, Post> {
         .returning();
 
       if (!created) {
-        throw new InternalServerErrorException('Failed to create post');
+        throw AppError.internal('Failed to create post');
       }
 
-      if (input.fileCount > 0) {
+      if (input.files > 0) {
         await tx.insert(postFiles).values(
-          Array.from({ length: input.fileCount }, (_, sortOrder) => ({
+          Array.from({ length: input.files }, (_, sortOrder) => ({
             postId: created.id,
             sortOrder,
-            uploadStatus: PostFileUploadStatus.PENDING,
-            tusUploadId: null,
           })),
         );
       }
@@ -45,7 +43,7 @@ export class CreatePostUseCase implements UseCase<CreatePostInput, Post> {
       });
 
       if (!full) {
-        throw new InternalServerErrorException('Failed to load created post');
+        throw AppError.internal('Failed to load created post');
       }
 
       return full;

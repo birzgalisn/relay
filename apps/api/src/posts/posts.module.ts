@@ -3,10 +3,9 @@ import { Module } from '@nestjs/common';
 import { mediaConfig } from '../infrastructure/config/media.config';
 import { IteratorModule } from '../infrastructure/iterator/iterator.module';
 import { MediaModule } from '../infrastructure/media/media.module';
-import { TusArtifactsModule } from '../infrastructure/tus-artifacts/tus-artifacts.module';
 import { PostFileResolver } from './models/post-file.model';
 import { ModeratedPostCleanupModule } from './modules/moderated-post-cleanup.module';
-import { PostEventsPubSubModule } from './modules/post-events-pubsub.module';
+import { PostEventsModule } from './modules/post-events.module';
 import { PostFileUploadModule } from './modules/post-file-upload.module';
 import { PostFilesTusModule } from './modules/post-files-tus.module';
 import { PostsResolver } from './posts.resolver';
@@ -21,11 +20,10 @@ const mediaProvider = mediaConfig.asProvider();
   imports: [
     IteratorModule,
     MediaModule,
-    TusArtifactsModule,
     PostFileUploadModule,
     PostFilesTusModule,
     ModeratedPostCleanupModule,
-    PostEventsPubSubModule,
+    PostEventsModule,
     ...mediaProvider.imports,
   ],
   providers: [

@@ -17,6 +17,7 @@ export class EnqueuePostFileImageValidationService {
 
   async enqueue(payload: ValidatePostFileImageJob): Promise<void> {
     await this.validationQueue.add(VALIDATE_POST_FILE_IMAGE_JOB_NAME, payload, {
+      jobId: payload.postFileId,
       removeOnComplete: true,
       removeOnFail: 100,
       attempts: 3,

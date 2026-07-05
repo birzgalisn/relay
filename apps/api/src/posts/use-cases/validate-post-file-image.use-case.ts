@@ -1,14 +1,11 @@
-import * as nodePath from 'node:path';
-
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { ConfigType } from '@nestjs/config';
-import { DrizzleService, PostFileUploadStatus, postFiles } from '@repo/drizzle';
+import { Injectable, Logger } from '@nestjs/common';
+import { DrizzleService, postFiles } from '@repo/drizzle';
+import { isErrorLike } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
-import { mediaConfig } from '../../infrastructure/config/media.config';
+import { MediaService } from '../../infrastructure/media/services/media.service';
 import { NsfwService } from '../../infrastructure/nsfw/services/nsfw.service';
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
-import type { ValidatePostFileImageJob } from '../jobs/validate-post-file-image.job';
 
 export type ValidatePostFileImageResult = {
   postId: string;
@@ -19,7 +16,7 @@ export type ValidatePostFileImageResult = {
 
 @Injectable()
 export class ValidatePostFileImageUseCase implements UseCase<
-  ValidatePostFileImageJob,
+  string,
   ValidatePostFileImageResult | null
 > {
   private readonly logger = new Logger(ValidatePostFileImageUseCase.name);
@@ -27,31 +24,25 @@ export class ValidatePostFileImageUseCase implements UseCase<
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly nsfw: NsfwService,
-    @Inject(mediaConfig.KEY) private readonly media: ConfigType<typeof mediaConfig>,
+    private readonly media: MediaService,
   ) {}
 
-  async execute(job: ValidatePostFileImageJob): Promise<ValidatePostFileImageResult | null> {
+  async execute(postFileId: string): Promise<ValidatePostFileImageResult | null> {
     const file = await this.drizzle.db.query.postFiles.findFirst({
-      where: eq(postFiles.id, job.postFileId),
+      where: eq(postFiles.id, postFileId),
       columns: {
         id: true,
         postId: true,
-        tusUploadId: true,
-        uploadStatus: true,
-        mimeType: true,
+        storageKey: true,
+        validatedAt: true,
       },
     });
 
-    if (!file || file.uploadStatus !== PostFileUploadStatus.PROCESSING) {
+    if (!file || file.validatedAt || !file.storageKey) {
       return null;
     }
 
-    if (file.tusUploadId !== job.tusUploadId) {
-      this.logger.warn(`Tus id mismatch for post file ${job.postFileId}`);
-      return null;
-    }
-
-    const filePath = nodePath.join(this.media.root, job.tusUploadId);
+    const filePath = this.media.path(file.storageKey);
 
     try {
       const { safe, predictions } = await this.nsfw.isImageSafe(filePath);
@@ -63,13 +54,13 @@ export class ValidatePostFileImageUseCase implements UseCase<
 
       return {
         postId: file.postId,
-        postFileId: job.postFileId,
+        postFileId: file.id,
         safe,
-        reason: safe ? '' : `NSFW check rejected file ${job.postFileId} (${predictionSummary})`,
+        reason: !safe ? `NSFW check rejected file ${file.id} (${predictionSummary})` : '',
       };
     } catch (err) {
       this.logger.error(
-        `NSFW validation failed for post file ${job.postFileId}: ${err instanceof Error ? err.message : String(err)}`,
+        `NSFW validation failed for post file ${file.id}: ${isErrorLike(err) ? err.message : String(err)}`,
       );
       throw err;
     }

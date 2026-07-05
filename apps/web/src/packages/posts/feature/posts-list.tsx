@@ -10,9 +10,9 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import { isErrorLike } from '@repo/shared';
 import { Link } from '@tanstack/react-router';
 
-import { FileUploadStatus } from '../../../_generated/graphql-types';
 import { FeedShell } from '../../../shared/ui/feed-shell';
 import { MediaGrid } from '../../../shared/ui/media-grid';
 import { MediaStorageIndicator } from '../../../shared/ui/media-storage-indicator';
@@ -44,7 +44,7 @@ export function PostsList() {
   if (error && !page) {
     return (
       <FeedShell>
-        <Text c="red">{error.message}</Text>
+        <Text c="red">{isErrorLike(error) ? error.message : 'Could not load posts'}</Text>
       </FeedShell>
     );
   }
@@ -110,15 +110,6 @@ export function PostsList() {
                           key: file.id,
                           src: file.url ?? '',
                           alt: caption,
-                          blurWhileProcessing: file.uploadStatus === FileUploadStatus.Processing,
-                          emptyLabel:
-                            file.uploadStatus === FileUploadStatus.Pending
-                              ? 'Uploading...'
-                              : file.uploadStatus === FileUploadStatus.Processing
-                                ? 'Checking image...'
-                                : file.uploadStatus === FileUploadStatus.Failed
-                                  ? 'Removed'
-                                  : undefined,
                         }))}
                       />
                     ) : (

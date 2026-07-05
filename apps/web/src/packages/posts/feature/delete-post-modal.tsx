@@ -1,8 +1,8 @@
 import { useMutation } from '@apollo/client/react';
 import { Button, Group, Modal, Skeleton, Stack, Text } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 
 import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
+import { useError } from '../../../shared/hooks/use-error';
 import { DeletePostDocument, type PostQuery } from '../data-access/posts.generated';
 import { POST_MODAL_PROPS } from '../util/modal-props';
 
@@ -14,6 +14,7 @@ export type DeletePostModalProps = {
 
 export function DeletePostModal({ pending = false, post }: DeletePostModalProps) {
   const handleClose = useClosePostsModal();
+  const handleError = useError();
   const [deletePost, { loading: deleting }] = useMutation(DeletePostDocument);
 
   const captionLabel = post?.caption?.trim() || 'Untitled';
@@ -29,11 +30,8 @@ export function DeletePostModal({ pending = false, post }: DeletePostModalProps)
         variables: { id: post.id },
       });
       handleClose();
-    } catch {
-      notifications.show({
-        message: 'Could not delete post',
-        color: 'red',
-      });
+    } catch (err) {
+      handleError(err, { title: 'Could not delete post' });
     }
   };
 

@@ -1,19 +1,7 @@
-import { DetailedError, Upload } from 'tus-js-client';
+import { Upload } from 'tus-js-client';
 
+import { formatTusFailure } from '../../../shared/util/format-tus-failure';
 import { getPostFilesTusEndpoint } from './get-post-files-tus-endpoint';
-
-function formatTusFailure(err: unknown): Error {
-  if (err instanceof DetailedError) {
-    const message = err.originalResponse?.getBody()?.trim();
-    return new Error(message || 'Could not upload file. Please try again.');
-  }
-
-  if (err instanceof Error) {
-    return err;
-  }
-
-  return new Error('Could not upload file. Please try again.');
-}
 
 export type UploadPostFilesProgress = {
   fileIndex: number;
@@ -21,11 +9,13 @@ export type UploadPostFilesProgress = {
   bytesTotal: number;
 };
 
-function uploadSingle(
-  file: File,
-  metadata: { postId: string; sortOrder: number },
-  onProgress?: (bytesUploaded: number, bytesTotal: number) => void,
-): Promise<void> {
+type UploadSingleInput = {
+  file: File;
+  metadata: { postId: string; sortOrder: number };
+  onProgress?: (progress: { bytesUploaded: number; bytesTotal: number }) => void;
+};
+
+function uploadSingle({ file, metadata, onProgress }: UploadSingleInput): Promise<void> {
   return new Promise((resolve, reject) => {
     const upload = new Upload(file, {
       endpoint: getPostFilesTusEndpoint(),
@@ -34,11 +24,10 @@ function uploadSingle(
       metadata: {
         postId: metadata.postId,
         sortOrder: String(metadata.sortOrder),
-        filename: file.name,
-        filetype: file.type || 'application/octet-stream',
+        mimeType: file.type,
       },
       onProgress(bytesUploaded, bytesTotal) {
-        onProgress?.(bytesUploaded, bytesTotal);
+        onProgress?.({ bytesUploaded, bytesTotal });
       },
       onError: (err) => reject(formatTusFailure(err)),
       onSuccess: () => resolve(),
@@ -47,16 +36,26 @@ function uploadSingle(
   });
 }
 
+export type UploadPostFilesInput = {
+  postId: string;
+  files: File[];
+  onProgress?: (p: UploadPostFilesProgress) => void;
+};
+
 /** Upload all post files in parallel. `sortOrder` matches `fileIndex` for reserved DB slots. */
-export async function uploadPostFiles(
-  postId: string,
-  files: File[],
-  onProgress?: (p: UploadPostFilesProgress) => void,
-): Promise<void> {
+export async function uploadPostFiles({
+  postId,
+  files,
+  onProgress,
+}: UploadPostFilesInput): Promise<void> {
   await Promise.all(
     files.map((file, fileIndex) =>
-      uploadSingle(file, { postId, sortOrder: fileIndex }, (bytesUploaded, bytesTotal) => {
-        onProgress?.({ fileIndex, bytesUploaded, bytesTotal });
+      uploadSingle({
+        file,
+        metadata: { postId, sortOrder: fileIndex },
+        onProgress: ({ bytesUploaded, bytesTotal }) => {
+          onProgress?.({ fileIndex, bytesUploaded, bytesTotal });
+        },
       }),
     ),
   );

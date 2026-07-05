@@ -36,6 +36,34 @@
       "when": 1782388705071,
       "tag": "0004_post_status_moderated",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782680747109,
+      "tag": "0005_media_mime_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782838410820,
+      "tag": "0007_damp_red_shift",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783000000000,
+      "tag": "0008_post_file_storage_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783200000000,
+      "tag": "0009_post_file_drop_tus_upload_id",
+      "breakpoints": true
     }
   ]
 }

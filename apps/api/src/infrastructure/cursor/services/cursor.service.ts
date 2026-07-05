@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AppError } from '@repo/shared';
 import { and, eq, lt, or, type SQL } from 'drizzle-orm';
 
 import { cursorPayloadSchema, type CursorPayload } from '../interfaces/cursor-payload.schema';
@@ -32,7 +33,7 @@ export class CursorService {
       const json = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
       return cursorPayloadSchema.parse(json);
     } catch {
-      throw new Error('Invalid cursor');
+      throw AppError.badRequest('Invalid cursor');
     }
   }
 }

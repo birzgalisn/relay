@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import { AppError } from '@repo/shared';
 
 import { NSFW_INPUT_SIZE } from '../constants/nsfw.constants';
 import type {
@@ -25,7 +26,7 @@ export async function imageFileToTensor3d({
     for (let c = 0; c < numChannels; c++) {
       const channel = data[i * numChannels + c];
       if (channel === undefined) {
-        throw new Error('Image buffer ended before all pixels were read');
+        throw AppError.internal('Image buffer ended before all pixels were read');
       }
       values[i * numChannels + c] = channel;
     }

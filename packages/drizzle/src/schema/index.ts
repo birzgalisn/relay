@@ -1,3 +1,4 @@
+import { MediaMimeType, SUPPORTED_MEDIA_MIME_TYPE_VALUES } from '@repo/shared';
 import { relations } from 'drizzle-orm';
 import {
   index,
@@ -10,12 +11,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-export enum PostFileUploadStatus {
-  PENDING = 'pending',
-  PROCESSING = 'processing',
-  READY = 'ready',
-  FAILED = 'failed',
-}
+export { MediaMimeType, SUPPORTED_MEDIA_MIME_TYPE_VALUES };
 
 export enum PostStatus {
   PUBLISHING = 'publishing',
@@ -23,18 +19,13 @@ export enum PostStatus {
   MODERATED = 'moderated',
 }
 
-export const postFileUploadStatusEnum = pgEnum('post_file_upload_status', [
-  PostFileUploadStatus.PENDING,
-  PostFileUploadStatus.PROCESSING,
-  PostFileUploadStatus.READY,
-  PostFileUploadStatus.FAILED,
-]);
-
 export const postStatusEnum = pgEnum('post_status', [
   PostStatus.PUBLISHING,
   PostStatus.PUBLISHED,
   PostStatus.MODERATED,
 ]);
+
+export const mediaMimeTypeEnum = pgEnum('media_mime_type', SUPPORTED_MEDIA_MIME_TYPE_VALUES);
 
 export const posts = pgTable(
   'post',
@@ -55,13 +46,11 @@ export const postFiles = pgTable(
     postId: uuid('post_id')
       .notNull()
       .references(() => posts.id, { onDelete: 'cascade' }),
-    tusUploadId: text('tus_upload_id').unique(),
-    uploadStatus: postFileUploadStatusEnum('upload_status')
-      .notNull()
-      .default(PostFileUploadStatus.READY),
     sortOrder: integer('sort_order').notNull().default(0),
-    mimeType: text('mime_type'),
+    mimeType: mediaMimeTypeEnum('mime_type'),
+    storageKey: text('storage_key').unique(),
     byteSize: integer('byte_size'),
+    validatedAt: timestamp('validated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' }).notNull().defaultNow(),
   },
   (t) => [

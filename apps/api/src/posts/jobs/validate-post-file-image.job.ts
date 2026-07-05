@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 export const validatePostFileImageJobSchema = z.object({
   postFileId: z.uuid(),
-  tusUploadId: z.string().min(1),
 });
 
 export type ValidatePostFileImageJob = z.infer<typeof validatePostFileImageJobSchema>;

@@ -1,4 +1,5 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AppError } from '@repo/shared';
 import { DrizzleService } from '@repo/drizzle';
 
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
@@ -11,7 +12,7 @@ export class CheckDatabaseReachableUseCase implements UseCase {
     try {
       await this.drizzle.ping();
     } catch {
-      throw new ServiceUnavailableException('Database unreachable');
+      throw AppError.serviceUnavailable('Database unreachable');
     }
   }
 }

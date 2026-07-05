@@ -8,7 +8,7 @@ import type { PostFeedUpdatedPayload } from './interfaces/post-feed-updated-payl
 import { PostEventUnion } from './models/post-event.union';
 import { PostPage } from './models/post-page.model';
 import { Post } from './models/post.model';
-import { PostEventsPubSubService } from './services/post-events-pubsub.service';
+import { PostEventsService } from './services/post-events.service';
 import { CreatePostUseCase } from './use-cases/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/delete-post.use-case';
 import { GetPostUseCase } from './use-cases/get-post.use-case';
@@ -21,7 +21,7 @@ export class PostsResolver {
     private readonly createPostUseCase: CreatePostUseCase,
     private readonly getPostUseCase: GetPostUseCase,
     private readonly deletePostUseCase: DeletePostUseCase,
-    private readonly postEventsPubSub: PostEventsPubSubService,
+    private readonly postEvents: PostEventsService,
   ) {}
 
   @Query(() => PostPage)
@@ -56,6 +56,6 @@ export class PostsResolver {
     resolve: (payload: PostFeedUpdatedPayload) => payload.postFeedUpdated,
   })
   postsFeed(@Args() _args: ListPostsArgs) {
-    return this.postEventsPubSub.postFeedUpdated();
+    return this.postEvents.postFeedUpdated();
   }
 }

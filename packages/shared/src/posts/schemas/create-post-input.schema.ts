@@ -17,7 +17,7 @@ export const createPostCaptionSchema = z
 
 export const createPostInputSchema = z.object({
   caption: createPostCaptionSchema.nullable().optional(),
-  fileCount: z
+  files: z
     .number()
     .int()
     .min(

@@ -1,90 +1,78 @@
 import { Injectable } from '@nestjs/common';
-import { DrizzleService, postFiles, PostFileUploadStatus, posts } from '@repo/drizzle';
-import { Upload } from '@tus/server';
+import { DrizzleService, postFiles, posts } from '@repo/drizzle';
+import { AppError, SUPPORTED_MEDIA_MIME_TYPES } from '@repo/shared';
 import { and, eq } from 'drizzle-orm';
 
-import { TusError } from '../../infrastructure/tus/util/tus.error';
-import { formatZodErrorMessage } from '../../infrastructure/validation/util/format-zod-error-message';
-import type { ValidatePostFileImageJob } from '../jobs/validate-post-file-image.job';
-import { postFileTusUploadMetadataSchema } from '../schemas/post-file-tus-upload-metadata.schema';
-import { isImageMimeType } from '../util/is-image-mime-type';
+import { MediaService } from '../../infrastructure/media/services/media.service';
+import type { UseCase } from '../../shared/interfaces/use-case.interface';
+import type { FinishPostFileUploadInput } from '../schemas/finish-post-file-upload.schema';
 import { isPostAcceptingUploads } from '../util/post-status.util';
 
-export type FinishPostFileUploadResult = {
-  postId: string;
-  validationJob: ValidatePostFileImageJob | null;
+export type ClaimedPostFileUpload = {
+  postFileId: string;
+  tusUploadId: string;
+  storageKey: string;
 };
 
 @Injectable()
-export class FinishPostFileUploadUseCase {
-  constructor(private readonly drizzle: DrizzleService) {}
+export class FinishPostFileUploadUseCase implements UseCase<FinishPostFileUploadInput, ClaimedPostFileUpload | null> {
+  constructor(
+    private readonly drizzle: DrizzleService,
+    private readonly media: MediaService,
+  ) {}
 
-  async execute(upload: Upload): Promise<FinishPostFileUploadResult> {
-    const parsed = postFileTusUploadMetadataSchema.safeParse(upload.metadata);
+  async execute(input: FinishPostFileUploadInput): Promise<ClaimedPostFileUpload | null> {
+    const claimed = await this.claim(input);
 
-    if (!parsed.success) {
-      throw new TusError(400, `Invalid upload metadata: ${formatZodErrorMessage(parsed.error)}`);
+    if (!claimed) {
+      return null;
     }
 
-    const { postId, sortOrder, filetype } = parsed.data;
+    await this.media.promote({
+      tusUploadId: claimed.tusUploadId,
+      storageKey: claimed.storageKey,
+    });
 
-    const byteSize = upload.size ?? null;
-    const uploadStatus = isImageMimeType(filetype)
-      ? PostFileUploadStatus.PROCESSING
-      : PostFileUploadStatus.READY;
+    return claimed;
+  }
 
-    const postFileIdForValidation = await this.drizzle.db.transaction(async (tx) => {
+  private async claim(input: FinishPostFileUploadInput): Promise<ClaimedPostFileUpload | null> {
+    return this.drizzle.db.transaction(async (tx) => {
       const post = await tx.query.posts.findFirst({
-        where: eq(posts.id, postId),
+        where: eq(posts.id, input.postId),
         columns: { id: true, status: true },
       });
 
       if (!post || !isPostAcceptingUploads(post.status)) {
-        throw new TusError(404, `Post ${postId} not found or not accepting uploads`);
+        throw AppError.notFound(`Post ${input.postId} not found or not accepting uploads`, {
+          postId: input.postId,
+        });
       }
 
-      const existingByTus = await tx.query.postFiles.findFirst({
-        where: and(eq(postFiles.postId, postId), eq(postFiles.tusUploadId, upload.id)),
-        columns: { id: true },
+      const slot = await tx.query.postFiles.findFirst({
+        where: and(eq(postFiles.postId, input.postId), eq(postFiles.sortOrder, input.sortOrder)),
+        columns: { id: true, storageKey: true },
       });
 
-      if (existingByTus) {
-        return null;
-      }
-
-      const pendingSlot = await tx.query.postFiles.findFirst({
-        where: and(
-          eq(postFiles.postId, postId),
-          eq(postFiles.sortOrder, sortOrder),
-          eq(postFiles.uploadStatus, PostFileUploadStatus.PENDING),
-        ),
-      });
-
-      if (!pendingSlot) {
-        throw new TusError(
-          409,
-          `No pending upload slot at sortOrder ${sortOrder} for post ${postId}`,
+      if (!slot) {
+        throw AppError.conflict(
+          `No upload slot at sortOrder ${input.sortOrder} for post ${input.postId}`,
+          { postId: input.postId, sortOrder: input.sortOrder },
         );
       }
 
+      if (slot.storageKey) {
+        return null;
+      }
+
+      const storageKey = `${slot.id}${SUPPORTED_MEDIA_MIME_TYPES[input.mimeType]}`;
+
       await tx
         .update(postFiles)
-        .set({
-          tusUploadId: upload.id,
-          mimeType: filetype,
-          byteSize,
-          uploadStatus,
-        })
-        .where(eq(postFiles.id, pendingSlot.id));
+        .set({ mimeType: input.mimeType, byteSize: input.byteSize, storageKey })
+        .where(eq(postFiles.id, slot.id));
 
-      return uploadStatus === PostFileUploadStatus.PROCESSING ? pendingSlot.id : null;
+      return { postFileId: slot.id, tusUploadId: input.tusUploadId, storageKey };
     });
-
-    return {
-      postId,
-      validationJob: postFileIdForValidation
-        ? { postFileId: postFileIdForValidation, tusUploadId: upload.id }
-        : null,
-    };
   }
 }

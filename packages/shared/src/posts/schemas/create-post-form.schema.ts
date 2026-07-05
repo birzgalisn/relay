@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { isSupportedMediaMimeType } from '../../file/util/media-mime-type.util';
 import { pluralize } from '../../util/pluralize';
 import {
   POST_FILE_MAX_UPLOAD_BYTES,
@@ -23,6 +24,10 @@ export const createPostFormSchema = z.object({
     .refine(
       (files) => files.every((f) => f.size <= POST_FILE_MAX_UPLOAD_BYTES),
       `Each file must be ${POST_FILE_MAX_UPLOAD_MIB} MiB or smaller`,
+    )
+    .refine(
+      (files) => files.every((f) => isSupportedMediaMimeType(f.type)),
+      'Only supported image types are allowed',
     ),
 });
 

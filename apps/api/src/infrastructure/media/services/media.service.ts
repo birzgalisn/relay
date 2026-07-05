@@ -1,5 +1,9 @@
+import { rename, rm } from 'node:fs/promises';
+import path from 'node:path';
+
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
+import { AppError } from '@repo/shared';
 
 import { mediaConfig } from '../../config/media.config';
 
@@ -7,9 +11,53 @@ import { mediaConfig } from '../../config/media.config';
 export class MediaService {
   constructor(@Inject(mediaConfig.KEY) private readonly media: ConfigType<typeof mediaConfig>) {}
 
-  getUrl(tusUploadId: string): string {
-    const segments = tusUploadId.split('/').map(encodeURIComponent).join('/');
-    const path = `/media/${segments}`;
-    return `${this.media.baseUrl}${path}`;
+  url(storageKey: string | null | undefined): string | null {
+    if (!storageKey) {
+      return null;
+    }
+
+    return `${this.media.baseUrl}/media/${storageKey}`;
+  }
+
+  path(storageKey: string): string {
+    return path.join(this.media.root, storageKey);
+  }
+
+  async promote({
+    tusUploadId,
+    storageKey,
+  }: {
+    tusUploadId: string;
+    storageKey: string;
+  }): Promise<void> {
+    const source = path.join(this.media.root, tusUploadId);
+    const destination = this.path(storageKey);
+
+    try {
+      await rename(source, destination);
+    } catch (cause) {
+      throw AppError.internal(`Could not store upload ${tusUploadId}`, { cause });
+    }
+
+    await Promise.all([
+      this.removePath(path.join(this.media.root, tusUploadId)),
+      this.removePath(path.join(this.media.root, `${tusUploadId}.json`)),
+    ]);
+  }
+
+  async remove(storageKey: string | null | undefined): Promise<void> {
+    if (!storageKey) {
+      return;
+    }
+
+    await this.removePath(this.path(storageKey));
+  }
+
+  private async removePath(filePath: string): Promise<void> {
+    try {
+      await rm(filePath, { force: true });
+    } catch {
+      // Best-effort cleanup.
+    }
   }
 }

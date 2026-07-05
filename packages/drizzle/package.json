@@ -37,6 +37,7 @@
   "dependencies": {
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
+    "@repo/shared": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",

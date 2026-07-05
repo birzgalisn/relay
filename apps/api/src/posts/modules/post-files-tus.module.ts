@@ -4,11 +4,8 @@ import { POST_FILE_MAX_UPLOAD_BYTES } from '@repo/shared';
 
 import { mediaConfig } from '../../infrastructure/config/media.config';
 import { MediaModule } from '../../infrastructure/media/media.module';
-import { MediaStorageService } from '../../infrastructure/media/services/media-storage.service';
 import { TusModule } from '../../infrastructure/tus/tus.module';
-import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
-import { FinishPostFileUploadUseCase } from '../use-cases/finish-post-file-upload.use-case';
-import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
+import { PostFilesTusHooks } from '../tus/post-files-tus.hooks';
 import { PostFileUploadModule } from './post-file-upload.module';
 
 /** Dedicated tus endpoint for post file uploads (not shared with other upload domains). */
@@ -22,43 +19,14 @@ const mediaProvider = mediaConfig.asProvider();
     MediaModule,
     TusModule.registerAsync({
       imports: [PostFileUploadModule, MediaModule, ...mediaProvider.imports],
-      inject: [
-        FinishPostFileUploadUseCase,
-        EnqueuePostFileImageValidationService,
-        ResolvePostStatusUseCase,
-        MediaStorageService,
-        ...mediaProvider.inject,
-      ],
-      useFactory(
-        finishPostFileUpload: FinishPostFileUploadUseCase,
-        enqueueImageValidation: EnqueuePostFileImageValidationService,
-        resolvePostStatus: ResolvePostStatusUseCase,
-        mediaStorage: MediaStorageService,
-        media: ConfigType<typeof mediaConfig>,
-      ) {
+      inject: [PostFilesTusHooks, ...mediaProvider.inject],
+      useFactory(hooks: PostFilesTusHooks, media: ConfigType<typeof mediaConfig>) {
         return {
           root: media.root,
           path: POST_FILES_TUS_PATH,
           maxUploadBytes: POST_FILE_MAX_UPLOAD_BYTES,
-          async onUploadCreate(_req, upload) {
-            if (upload.size) {
-              await mediaStorage.assertUploadAllowed(upload.size);
-            }
-
-            return {};
-          },
-          async onUploadFinish(_req, upload) {
-            const { postId, validationJob } = await finishPostFileUpload.execute(upload);
-
-            if (validationJob) {
-              await enqueueImageValidation.enqueue(validationJob);
-            }
-
-            await resolvePostStatus.execute(postId);
-            await mediaStorage.publishCurrent();
-
-            return {};
-          },
+          onUploadCreate: hooks.onUploadCreate.bind(hooks),
+          onUploadFinish: hooks.onUploadFinish.bind(hooks),
         };
       },
     }),

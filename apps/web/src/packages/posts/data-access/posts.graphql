@@ -7,7 +7,6 @@ fragment Post on Post {
     __typename
     id
     url
-    uploadStatus
     sortOrder
   }
 }
@@ -48,7 +47,6 @@ fragment PostCreatedEvent on PostCreated {
     __typename
     id
     url
-    uploadStatus
     sortOrder
   }
 }

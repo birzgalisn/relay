@@ -582,6 +582,9 @@ importers:
       '@nestjs/config':
         specifier: 'catalog:'
         version: 4.0.4(@nestjs/common@11.1.23(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../shared
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2

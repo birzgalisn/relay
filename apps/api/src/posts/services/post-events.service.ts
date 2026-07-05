@@ -9,20 +9,20 @@ import type { Post } from '../models/post.model';
 const POST_FEED_UPDATED = 'postFeedUpdated';
 
 @Injectable()
-export class PostEventsPubSubService {
+export class PostEventsService {
   private readonly pubSub = new PubSub();
 
   postFeedUpdated() {
     return this.pubSub.asyncIterableIterator<PostFeedUpdatedPayload>(POST_FEED_UPDATED);
   }
 
-  async publishCreated(post: Post): Promise<void> {
+  async broadcastCreated(post: Post): Promise<void> {
     await this.pubSub.publish(POST_FEED_UPDATED, {
       postFeedUpdated: new PostCreated(post),
     });
   }
 
-  async publishRemoved(id: string): Promise<void> {
+  async broadcastRemoved(id: string): Promise<void> {
     await this.pubSub.publish(POST_FEED_UPDATED, {
       postFeedUpdated: new PostRemoved({ id }),
     });

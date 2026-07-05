@@ -7,8 +7,8 @@ import {
   validatePostFileImageJobSchema,
   type ValidatePostFileImageJob,
 } from '../jobs/validate-post-file-image.job';
-import { MarkPostFileReadyUseCase } from '../use-cases/mark-post-file-ready.use-case';
-import { MarkPostFileRejectedUseCase } from '../use-cases/mark-post-file-rejected.use-case';
+import { MarkPostFileValidatedUseCase } from '../use-cases/mark-post-file-validated.use-case';
+import { ModeratePostUseCase } from '../use-cases/moderate-post.use-case';
 import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
 import { ValidatePostFileImageUseCase } from '../use-cases/validate-post-file-image.use-case';
 
@@ -18,35 +18,31 @@ export class ValidatePostFileImageProcessor extends WorkerHost {
 
   constructor(
     private readonly validatePostFileImage: ValidatePostFileImageUseCase,
-    private readonly markPostFileReady: MarkPostFileReadyUseCase,
-    private readonly markPostFileRejected: MarkPostFileRejectedUseCase,
+    private readonly markPostFileValidated: MarkPostFileValidatedUseCase,
     private readonly resolvePostStatus: ResolvePostStatusUseCase,
+    private readonly moderatePost: ModeratePostUseCase,
   ) {
     super();
   }
 
   async process(job: Job<ValidatePostFileImageJob>): Promise<void> {
-    const parsed = validatePostFileImageJobSchema.safeParse(job.data);
+    const { postFileId } = validatePostFileImageJobSchema.parse(job.data);
 
-    if (!parsed.success) {
-      this.logger.warn(`Invalid job ${job.id}: ${parsed.error.message}`);
-      return;
-    }
-
-    const result = await this.validatePostFileImage.execute(parsed.data);
+    const result = await this.validatePostFileImage.execute(postFileId);
 
     if (!result) {
       return;
     }
 
-    const { postId, postFileId, safe, reason } = result;
+    const { postId, safe, reason } = result;
 
-    if (safe) {
-      await this.markPostFileReady.execute(postFileId);
-    } else {
-      await this.markPostFileRejected.execute({ postFileId, reason });
+    if (!safe) {
+      this.logger.log(`Post flagged for moderation: ${reason}`);
+      await this.moderatePost.execute(postId);
+      return;
     }
 
+    await this.markPostFileValidated.execute(postFileId);
     await this.resolvePostStatus.execute(postId);
   }
 }

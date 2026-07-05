@@ -1,41 +1,46 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DrizzleService, postFiles, posts } from '@repo/drizzle';
+import { AppError } from '@repo/shared';
 import { eq } from 'drizzle-orm';
 
 import { MediaStorageService } from '../../infrastructure/media/services/media-storage.service';
-import { TusArtifactsService } from '../../infrastructure/tus-artifacts/services/tus-artifacts.service';
+import { MediaService } from '../../infrastructure/media/services/media.service';
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
-import { PostEventsPubSubService } from '../services/post-events-pubsub.service';
+import { PostEventsService } from '../services/post-events.service';
 
 @Injectable()
 export class DeletePostUseCase implements UseCase<string> {
   constructor(
     private readonly drizzle: DrizzleService,
-    private readonly tusArtifacts: TusArtifactsService,
-    private readonly postEventsPubSub: PostEventsPubSubService,
+    private readonly media: MediaService,
+    private readonly postEvents: PostEventsService,
     private readonly mediaStorage: MediaStorageService,
   ) {}
 
   async execute(id: string): Promise<void> {
-    const tusIds = await this.drizzle.db.transaction(async (tx) => {
+    const files = await this.delete(id);
+
+    await Promise.all(files.map((file) => this.media.remove(file.storageKey)));
+    await this.postEvents.broadcastRemoved(id);
+    await this.mediaStorage.broadcastStorageCapacity();
+  }
+
+  private async delete(id: string): Promise<{ storageKey: string | null }[]> {
+    return this.drizzle.db.transaction(async (tx) => {
       const fileRows = await tx
-        .select({ tusUploadId: postFiles.tusUploadId })
+        .select({
+          storageKey: postFiles.storageKey,
+        })
         .from(postFiles)
         .where(eq(postFiles.postId, id));
 
       const deleted = await tx.delete(posts).where(eq(posts.id, id)).returning({ id: posts.id });
 
       if (deleted.length === 0) {
-        throw new NotFoundException(`Post ${id} not found`);
+        throw AppError.notFound(`Post ${id} not found`, { postId: id });
       }
 
-      return fileRows
-        .map((row) => row.tusUploadId)
-        .filter((tid): tid is string => tid != null && tid.length > 0);
+      return fileRows;
     });
-
-    await Promise.all(tusIds.map((tusUploadId) => this.tusArtifacts.remove(tusUploadId)));
-    await this.postEventsPubSub.publishRemoved(id);
-    await this.mediaStorage.publishCurrent();
   }
 }

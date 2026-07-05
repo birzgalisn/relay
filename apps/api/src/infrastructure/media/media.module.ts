@@ -7,7 +7,6 @@ import { MediaResolver } from './media.resolver';
 import { MediaStoragePubSubService } from './services/media-storage-pubsub.service';
 import { MediaStorageService } from './services/media-storage.service';
 import { MediaService } from './services/media.service';
-import { GetMediaStorageUseCase } from './use-cases/get-media-storage.use-case';
 
 const mediaProvider = mediaConfig.asProvider();
 
@@ -29,7 +28,6 @@ const mediaProvider = mediaConfig.asProvider();
     MediaService,
     MediaStoragePubSubService,
     MediaStorageService,
-    GetMediaStorageUseCase,
     MediaResolver,
   ],
   exports: [MediaService, MediaStorageService],

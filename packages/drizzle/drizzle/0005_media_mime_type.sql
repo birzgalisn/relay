@@ -1,0 +1,2 @@
+CREATE TYPE "public"."media_mime_type" AS ENUM('image/avif', 'image/gif', 'image/heic', 'image/heif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp');--> statement-breakpoint
+ALTER TABLE "post_file" ALTER COLUMN "mime_type" SET DATA TYPE "public"."media_mime_type" USING "mime_type"::"public"."media_mime_type";

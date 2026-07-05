@@ -4,10 +4,7 @@ import { Queue } from 'bullmq';
 
 import { MODERATED_POST_CLEANUP_QUEUE } from '../../infrastructure/queue/tokens/queue.tokens';
 import { MODERATED_POST_CLEANUP_CRON } from '../constants/moderated-post-cleanup.constants';
-import {
-  CLEANUP_MODERATED_POSTS_JOB_NAME,
-  type CleanupModeratedPostsJob,
-} from '../jobs/cleanup-moderated-posts.job';
+import { CLEANUP_MODERATED_POSTS_JOB_NAME } from '../jobs/cleanup-moderated-posts.job';
 
 const MODERATED_POST_CLEANUP_SCHEDULER_ID = 'moderated-post-cleanup' as const;
 
@@ -17,7 +14,7 @@ export class ScheduleModeratedPostCleanupService implements OnModuleInit {
 
   constructor(
     @InjectQueue(MODERATED_POST_CLEANUP_QUEUE)
-    private readonly cleanupQueue: Queue<CleanupModeratedPostsJob>,
+    private readonly cleanupQueue: Queue,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -26,14 +23,14 @@ export class ScheduleModeratedPostCleanupService implements OnModuleInit {
       { pattern: MODERATED_POST_CLEANUP_CRON },
       {
         name: CLEANUP_MODERATED_POSTS_JOB_NAME,
-        data: undefined,
+        data: {},
         opts: {
           removeOnComplete: true,
-          removeOnFail: 10,
+          removeOnFail: 100,
         },
       },
     );
 
-    this.logger.log(`Moderated post cleanup scheduled (${MODERATED_POST_CLEANUP_CRON})`);
+    this.logger.log(`Scheduled moderated post cleanup (${MODERATED_POST_CLEANUP_CRON})`);
   }
 }

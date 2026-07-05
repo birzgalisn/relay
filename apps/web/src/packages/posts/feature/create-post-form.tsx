@@ -1,7 +1,6 @@
 import { useMutation } from '@apollo/client/react';
 import { Box, Button, Group, Stack, Text, Textarea } from '@mantine/core';
-import { Dropzone, IMAGE_MIME_TYPE, type FileWithPath } from '@mantine/dropzone';
-import { schemaResolver, useForm } from '@mantine/form';
+import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
 import {
   createPostFormSchema,
@@ -9,16 +8,16 @@ import {
   POST_FILE_MAX_UPLOAD_BYTES,
   POST_FILE_MAX_UPLOAD_MIB,
   POST_MAX_FILE_COUNT,
-  type CreatePostFormValues,
+  SUPPORTED_MEDIA_MIME_TYPE_VALUES,
 } from '@repo/shared';
 import { useMemo, useState } from 'react';
 
+import { useAppForm } from '../../../shared/hooks/use-app-form';
 import { useClosePostsModal } from '../../../shared/hooks/use-close-posts-modal';
 import { useFilePreviewUrls } from '../../../shared/hooks/use-file-preview-urls';
 import { useMediaStorage } from '../../../shared/hooks/use-media-storage';
 import { MediaGrid } from '../../../shared/ui/media-grid';
 import { MediaStorageIndicator } from '../../../shared/ui/media-storage-indicator';
-import { isInstanceOfError } from '../../../shared/util/is-instance-of-error';
 import { CreatePostDocument } from '../data-access/posts.generated';
 import { uploadPostFiles } from '../util/upload-post-files-tus';
 
@@ -31,13 +30,11 @@ export function CreatePostForm() {
 
   const [createPost] = useMutation(CreatePostDocument);
 
-  const form = useForm<CreatePostFormValues>({
+  const form = useAppForm(createPostFormSchema, {
     initialValues: {
       caption: '',
       files: [],
     },
-    validate: schemaResolver(createPostFormSchema),
-    transformValues: (values) => createPostFormSchema.parse(values),
   });
 
   const files = form.values.files;
@@ -63,13 +60,13 @@ export function CreatePostForm() {
         variables: {
           input: {
             caption: values.caption.length > 0 ? values.caption : null,
-            fileCount: values.files.length,
+            files: values.files.length,
           },
         },
       });
 
       if (result.error) {
-        throw new Error(result.error.message);
+        throw result.error;
       }
 
       const postId = result.data?.createPost.id;
@@ -78,28 +75,28 @@ export function CreatePostForm() {
       }
 
       setFileUploadPct(values.files.map(() => 0));
-      await uploadPostFiles(postId, values.files, ({ fileIndex, bytesUploaded, bytesTotal }) => {
-        const file = values.files[fileIndex];
-        const total = bytesTotal > 0 ? bytesTotal : (file?.size ?? 0);
-        const pct = total > 0 ? Math.min(100, Math.round((bytesUploaded / total) * 100)) : 0;
-        setFileUploadPct((prev) => {
-          if (prev == null) {
-            return prev;
-          }
-          const next = [...prev];
-          if (fileIndex >= 0 && fileIndex < next.length) {
-            next[fileIndex] = pct;
-          }
-          return next;
-        });
+      await uploadPostFiles({
+        postId,
+        files: values.files,
+        onProgress: ({ fileIndex, bytesUploaded, bytesTotal }) => {
+          const file = values.files[fileIndex];
+          const total = bytesTotal > 0 ? bytesTotal : (file?.size ?? 0);
+          const pct = total > 0 ? Math.min(100, Math.round((bytesUploaded / total) * 100)) : 0;
+          setFileUploadPct((prev) => {
+            if (prev == null) {
+              return prev;
+            }
+            const next = [...prev];
+            if (fileIndex >= 0 && fileIndex < next.length) {
+              next[fileIndex] = pct;
+            }
+            return next;
+          });
+        },
       });
       handleClose();
     } catch (e) {
-      notifications.show({
-        title: 'Could not publish post',
-        message: isInstanceOfError(e) ? e.message : 'Something went wrong',
-        color: 'red',
-      });
+      form.handleError(e, { title: 'Could not publish post' });
     } finally {
       setFileUploadPct(null);
       setBusy(false);
@@ -150,7 +147,7 @@ export function CreatePostForm() {
                   });
                 }
               }}
-              accept={IMAGE_MIME_TYPE}
+              accept={[...SUPPORTED_MEDIA_MIME_TYPE_VALUES]}
               maxSize={POST_FILE_MAX_UPLOAD_BYTES}
               maxFiles={POST_MAX_FILE_COUNT}
               disabled={busy}
