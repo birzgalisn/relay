@@ -6,6 +6,7 @@ import { toTusError } from '../../infrastructure/tus/util/to-tus-error.util';
 import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
 import { finishPostFileUploadInputSchema } from '../schemas/finish-post-file-upload.schema';
 import { FinishPostFileUploadUseCase } from '../use-cases/finish-post-file-upload.use-case';
+import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
 
 @Injectable()
 export class PostFilesTusHooks {
@@ -13,6 +14,7 @@ export class PostFilesTusHooks {
     private readonly mediaStorage: MediaStorageService,
     private readonly finishPostFileUpload: FinishPostFileUploadUseCase,
     private readonly enqueueImageValidation: EnqueuePostFileImageValidationService,
+    private readonly resolvePostStatus: ResolvePostStatusUseCase,
   ) {}
 
   async onUploadCreate(_req: unknown, upload: Upload) {
@@ -39,6 +41,7 @@ export class PostFilesTusHooks {
 
       if (claimed) {
         await this.enqueueImageValidation.enqueue({ postFileId: claimed.postFileId });
+        await this.resolvePostStatus.execute(input.postId);
       }
 
       await this.mediaStorage.broadcastStorageCapacity();

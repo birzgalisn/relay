@@ -9,7 +9,6 @@ import {
 } from '../jobs/validate-post-file-image.job';
 import { MarkPostFileValidatedUseCase } from '../use-cases/mark-post-file-validated.use-case';
 import { ModeratePostUseCase } from '../use-cases/moderate-post.use-case';
-import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
 import { ValidatePostFileImageUseCase } from '../use-cases/validate-post-file-image.use-case';
 
 @Processor(POST_FILE_IMAGE_VALIDATION_QUEUE, { concurrency: 1 })
@@ -19,7 +18,6 @@ export class ValidatePostFileImageProcessor extends WorkerHost {
   constructor(
     private readonly validatePostFileImage: ValidatePostFileImageUseCase,
     private readonly markPostFileValidated: MarkPostFileValidatedUseCase,
-    private readonly resolvePostStatus: ResolvePostStatusUseCase,
     private readonly moderatePost: ModeratePostUseCase,
   ) {
     super();
@@ -43,6 +41,5 @@ export class ValidatePostFileImageProcessor extends WorkerHost {
     }
 
     await this.markPostFileValidated.execute(postFileId);
-    await this.resolvePostStatus.execute(postId);
   }
 }

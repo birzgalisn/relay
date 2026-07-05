@@ -34,7 +34,7 @@ export class PostFileResolver {
 
   @ResolveField(() => String, { nullable: true })
   url(@Parent() file: PostFile): string | null {
-    if (file.storageKey && file.validatedAt) {
+    if (file.storageKey) {
       return this.media.url(file.storageKey);
     }
 
