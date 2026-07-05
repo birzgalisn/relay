@@ -60,7 +60,7 @@ Use a recent LTS (22.04 or 24.04 is fine). Stay in a single SSH session. Run ste
 | Name                   | Purpose                                              |
 | ---------------------- | ---------------------------------------------------- |
 | `PROJECT`              | Traefik label prefix, e.g. `relay`                   |
-| `CNAME`                | Apex host, e.g. `relay.example.com` (no `https://`)  |
+| `CNAME`                | Apex host, e.g. `relay.example.com` (no `https://`); API CORS allows `app.<CNAME>` only in production |
 | `SWARM_ADVERTISE_ADDR` | Same IP as `docker swarm init --advertise-addr`      |
 | `API_BASE_URL`         | `https://api.<CNAME>` (public API URL for Tus/media) |
 | `VITE_API_BASE_URL`    | Same as `API_BASE_URL`                               |

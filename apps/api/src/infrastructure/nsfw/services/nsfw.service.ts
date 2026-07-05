@@ -4,7 +4,6 @@ import type { ConfigType } from '@nestjs/config';
 import { nsfwConfig } from '../../config/nsfw.config';
 import type { ImageSafetyResult } from '../interfaces/image-safety-result.interface';
 import type { NsfwModel } from '../interfaces/nsfw-model.interface';
-import { configureSharpForNsfw } from '../util/configure-sharp.util';
 import { evaluateImageSafety } from '../util/evaluate-image-safety.util';
 import { imageFileToTensor3d } from '../util/image-file-to-tensor.util';
 import { initTfWasmBackend } from '../util/init-tf-wasm-backend.util';
@@ -19,8 +18,6 @@ export class NsfwService implements OnModuleInit, OnModuleDestroy {
   constructor(@Inject(nsfwConfig.KEY) private readonly config: ConfigType<typeof nsfwConfig>) {}
 
   async onModuleInit(): Promise<void> {
-    configureSharpForNsfw();
-
     this.tf = await initTfWasmBackend();
     this.model = await loadNsfwModel();
 

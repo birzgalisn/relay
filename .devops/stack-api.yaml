@@ -17,6 +17,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       API_BASE_URL: ${API_BASE_URL}
+      CNAME: ${CNAME}
     volumes:
       - media_data:/relay-media
     networks:

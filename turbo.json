@@ -1,7 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "API_BASE_URL"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "API_BASE_URL", "CNAME"],
   "tasks": {
     "dev": {
       "dependsOn": ["@repo/shared#build", "@repo/drizzle#db:sync", "api#build"],

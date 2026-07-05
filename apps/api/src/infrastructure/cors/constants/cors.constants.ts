@@ -1,0 +1,32 @@
+export const CORS_HEADERS = {
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  // @fastify/cors must allow tus-js-client request headers on cross-origin preflight.
+  allowedHeaders: [
+    'Authorization',
+    'Content-Type',
+    'Forwarded',
+    'Tus-Resumable',
+    'Tus-Version',
+    'Upload-Concat',
+    'Upload-Defer-Length',
+    'Upload-Length',
+    'Upload-Metadata',
+    'Upload-Offset',
+    'X-Forwarded-Host',
+    'X-Forwarded-Proto',
+    'X-HTTP-Method-Override',
+    'X-Requested-With',
+  ],
+  exposedHeaders: [
+    'Location',
+    'Upload-Offset',
+    'Upload-Length',
+    'Tus-Resumable',
+    'Tus-Version',
+    'Tus-Max-Size',
+    'Tus-Extension',
+    'Upload-Metadata',
+    'Upload-Defer-Length',
+    'Upload-Concat',
+  ],
+};
