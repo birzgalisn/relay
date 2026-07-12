@@ -12,6 +12,11 @@ export class CorsHook implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.httpAdapterHost.httpAdapter.enableCors(this.options);
+    const adapter = this.httpAdapterHost.httpAdapter;
+    if (!adapter) {
+      return;
+    }
+
+    adapter.enableCors(this.options);
   }
 }

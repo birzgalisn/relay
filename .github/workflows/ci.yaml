@@ -36,8 +36,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       REDIS_URL: redis://localhost:6379
-      API_BASE_URL: ${{ vars.API_BASE_URL }}
-      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      CNAME: ci.localhost
+      API_BASE_URL: ${{ vars.API_BASE_URL != '' && vars.API_BASE_URL || 'http://api.ci.localhost' }}
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL != '' && vars.VITE_API_BASE_URL || 'http://api.ci.localhost' }}
 
     services:
       postgres:
@@ -101,7 +102,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       REDIS_URL: redis://localhost:6379
-      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      CNAME: ci.localhost
+      API_BASE_URL: ${{ vars.API_BASE_URL != '' && vars.API_BASE_URL || 'http://api.ci.localhost' }}
 
     services:
       postgres:
