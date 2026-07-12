@@ -108,8 +108,10 @@ export function PostsList() {
                         flush
                         items={sortedFiles.map((file) => ({
                           key: file.id,
-                          src: file.url ?? '',
+                          src: file.src ?? '',
+                          srcSet: file.srcSet ?? undefined,
                           alt: caption,
+                          blurWhileProcessing: !file.validatedAt,
                         }))}
                       />
                     ) : (

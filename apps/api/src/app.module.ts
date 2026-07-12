@@ -26,9 +26,12 @@ const corsEnvFromConfig = corsConfig.asProvider();
       imports: [...appEnvFromConfig.imports, ...corsEnvFromConfig.imports],
       inject: [...appEnvFromConfig.inject, ...corsEnvFromConfig.inject],
       useFactory: (app: ConfigType<typeof appConfig>, cors: ConfigType<typeof corsConfig>) => ({
-          origin: app.nodeEnv !== NodeEnv.PRODUCTION ? true : [`https://app.${cors.cname}`, `http://app.${cors.cname}`],
-          ...CORS_HEADERS,
-        }),
+        origin:
+          app.nodeEnv !== NodeEnv.PRODUCTION
+            ? true
+            : [`https://app.${cors.cname}`, `http://app.${cors.cname}`],
+        ...CORS_HEADERS,
+      }),
     }),
     DrizzleModule,
     RedisModule,

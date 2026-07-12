@@ -7,6 +7,7 @@ import { MediaStorageService } from '../../infrastructure/media/services/media-s
 import { MediaService } from '../../infrastructure/media/services/media.service';
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
 import { PostEventsService } from '../services/post-events.service';
+import { deletePostFileMedia } from '../util/delete-post-file-media.util';
 
 @Injectable()
 export class DeletePostUseCase implements UseCase<string> {
@@ -20,15 +21,16 @@ export class DeletePostUseCase implements UseCase<string> {
   async execute(id: string): Promise<void> {
     const files = await this.delete(id);
 
-    await Promise.all(files.map((file) => this.media.remove(file.storageKey)));
+    await Promise.all(files.map((file) => deletePostFileMedia(this.media, file)));
     await this.postEvents.broadcastRemoved(id);
     await this.mediaStorage.broadcastStorageCapacity();
   }
 
-  private async delete(id: string): Promise<{ storageKey: string | null }[]> {
+  private async delete(id: string): Promise<{ id: string; storageKey: string | null }[]> {
     return this.drizzle.db.transaction(async (tx) => {
       const fileRows = await tx
         .select({
+          id: postFiles.id,
           storageKey: postFiles.storageKey,
         })
         .from(postFiles)

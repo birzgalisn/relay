@@ -1,5 +1,6 @@
 import { SUPPORTED_MEDIA_MIME_TYPES } from '../constants/media-mime-type-extensions.constants';
 import { MediaMimeType } from '../constants/media-mime-type.constants';
+import { POST_FILE_THUMBNAIL_SIZES } from '../constants/post-file-thumbnail.constants';
 
 function isKnownMediaMimeType(value: string): value is MediaMimeType {
   return value in SUPPORTED_MEDIA_MIME_TYPES;
@@ -38,4 +39,20 @@ export function getMediaStorageKey({
 }): string | null {
   const extension = getMediaMimeTypeExtension(mimeType);
   return extension ? `${postFileId}${extension}` : null;
+}
+
+export function getPostFileThumbnailStorageKey({
+  postFileId,
+  size,
+}: {
+  postFileId: string;
+  size: string;
+}): string {
+  return `${postFileId}.${size}.webp`;
+}
+
+export function getPostFileThumbnailStorageKeys(postFileId: string): string[] {
+  return POST_FILE_THUMBNAIL_SIZES.map(({ size }) =>
+    getPostFileThumbnailStorageKey({ postFileId, size }),
+  );
 }

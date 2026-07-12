@@ -7,7 +7,7 @@ import {
   validatePostFileImageJobSchema,
   type ValidatePostFileImageJob,
 } from '../jobs/validate-post-file-image.job';
-import { MarkPostFileValidatedUseCase } from '../use-cases/mark-post-file-validated.use-case';
+import { EnqueuePostFileThumbnailGenerationService } from '../services/enqueue-post-file-thumbnail-generation.service';
 import { ModeratePostUseCase } from '../use-cases/moderate-post.use-case';
 import { ValidatePostFileImageUseCase } from '../use-cases/validate-post-file-image.use-case';
 
@@ -17,7 +17,7 @@ export class ValidatePostFileImageProcessor extends WorkerHost {
 
   constructor(
     private readonly validatePostFileImage: ValidatePostFileImageUseCase,
-    private readonly markPostFileValidated: MarkPostFileValidatedUseCase,
+    private readonly enqueueThumbnailGeneration: EnqueuePostFileThumbnailGenerationService,
     private readonly moderatePost: ModeratePostUseCase,
   ) {
     super();
@@ -40,6 +40,6 @@ export class ValidatePostFileImageProcessor extends WorkerHost {
       return;
     }
 
-    await this.markPostFileValidated.execute(postFileId);
+    await this.enqueueThumbnailGeneration.enqueue({ postFileId });
   }
 }

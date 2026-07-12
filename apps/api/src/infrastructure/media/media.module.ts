@@ -24,12 +24,7 @@ const mediaProvider = mediaConfig.asProvider();
       },
     }),
   ],
-  providers: [
-    MediaService,
-    MediaStoragePubSubService,
-    MediaStorageService,
-    MediaResolver,
-  ],
+  providers: [MediaService, MediaStoragePubSubService, MediaStorageService, MediaResolver],
   exports: [MediaService, MediaStorageService],
 })
 export class MediaModule {}

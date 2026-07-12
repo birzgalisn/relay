@@ -6,6 +6,7 @@ import { redisConfig } from '../config/redis.config';
 import {
   MODERATED_POST_CLEANUP_QUEUE,
   POST_FILE_IMAGE_VALIDATION_QUEUE,
+  POST_FILE_THUMBNAIL_QUEUE,
 } from './tokens/queue.tokens';
 
 const redisFromConfig = redisConfig.asProvider();
@@ -22,6 +23,7 @@ const redisFromConfig = redisConfig.asProvider();
     }),
     BullModule.registerQueue(
       { name: POST_FILE_IMAGE_VALIDATION_QUEUE },
+      { name: POST_FILE_THUMBNAIL_QUEUE },
       { name: MODERATED_POST_CLEANUP_QUEUE },
     ),
   ],

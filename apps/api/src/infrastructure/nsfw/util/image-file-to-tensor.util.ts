@@ -1,5 +1,5 @@
-import sharp from 'sharp';
 import { AppError } from '@repo/shared';
+import sharp from 'sharp';
 
 import { NSFW_INPUT_SIZE } from '../constants/nsfw.constants';
 import type {

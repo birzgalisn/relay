@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { AppError } from '@repo/shared';
 import { DrizzleService } from '@repo/drizzle';
+import { AppError } from '@repo/shared';
 
 import type { UseCase } from '../../shared/interfaces/use-case.interface';
 

@@ -40,20 +40,20 @@ export class MediaService {
     }
 
     await Promise.all([
-      this.removePath(path.join(this.media.root, tusUploadId)),
-      this.removePath(path.join(this.media.root, `${tusUploadId}.json`)),
+      this.deletePath(path.join(this.media.root, tusUploadId)),
+      this.deletePath(path.join(this.media.root, `${tusUploadId}.json`)),
     ]);
   }
 
-  async remove(storageKey: string | null | undefined): Promise<void> {
+  async delete(storageKey: string | null | undefined): Promise<void> {
     if (!storageKey) {
       return;
     }
 
-    await this.removePath(this.path(storageKey));
+    await this.deletePath(this.path(storageKey));
   }
 
-  private async removePath(filePath: string): Promise<void> {
+  private async deletePath(filePath: string): Promise<void> {
     try {
       await rm(filePath, { force: true });
     } catch {

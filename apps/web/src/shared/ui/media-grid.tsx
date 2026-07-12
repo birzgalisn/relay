@@ -4,6 +4,8 @@ import { useState } from 'react';
 export type MediaGridItem = {
   key: string;
   src: string;
+  srcSet?: string;
+  sizes?: string;
   alt?: string;
   /** When set with an empty `src`, replaces the generic empty placeholder (e.g. uploading). */
   emptyLabel?: string;
@@ -21,6 +23,16 @@ type MediaGridProps = {
   /** Full-bleed under a card header; outer radius removed (parent should clip). */
   flush?: boolean;
 };
+
+function gridSizes(count: number): string {
+  if (count <= 1) {
+    return '100vw';
+  }
+  if (count === 2) {
+    return '50vw';
+  }
+  return '33vw';
+}
 
 function gridCols(count: number): number {
   if (count <= 1) {
@@ -56,6 +68,8 @@ function MediaGridTile({ item, busy, onRemove, index }: MediaGridTileProps) {
       {item.src ? (
         <Image
           src={item.src}
+          srcSet={item.srcSet}
+          sizes={item.sizes}
           alt={item.alt ?? ''}
           fit="cover"
           pos="absolute"
@@ -147,6 +161,7 @@ export function MediaGrid({ items, busy = false, onRemove, flush = false }: Medi
   }
 
   const cols = gridCols(items.length);
+  const sizes = gridSizes(items.length);
   const gap = 2;
 
   return (
@@ -158,7 +173,13 @@ export function MediaGrid({ items, busy = false, onRemove, flush = false }: Medi
     >
       <SimpleGrid cols={cols} spacing={gap}>
         {items.map((item, index) => (
-          <MediaGridTile key={item.key} item={item} busy={busy} onRemove={onRemove} index={index} />
+          <MediaGridTile
+            key={item.key}
+            item={{ ...item, sizes: item.sizes ?? sizes }}
+            busy={busy}
+            onRemove={onRemove}
+            index={index}
+          />
         ))}
       </SimpleGrid>
     </Box>

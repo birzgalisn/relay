@@ -3,8 +3,8 @@ import type { Upload } from '@tus/server';
 
 import { MediaStorageService } from '../../infrastructure/media/services/media-storage.service';
 import { toTusError } from '../../infrastructure/tus/util/to-tus-error.util';
-import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
 import { finishPostFileUploadInputSchema } from '../schemas/finish-post-file-upload.schema';
+import { EnqueuePostFileImageValidationService } from '../services/enqueue-post-file-image-validation.service';
 import { FinishPostFileUploadUseCase } from '../use-cases/finish-post-file-upload.use-case';
 import { ResolvePostStatusUseCase } from '../use-cases/resolve-post-status.use-case';
 

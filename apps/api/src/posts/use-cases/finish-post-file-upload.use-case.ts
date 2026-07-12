@@ -15,7 +15,10 @@ export type ClaimedPostFileUpload = {
 };
 
 @Injectable()
-export class FinishPostFileUploadUseCase implements UseCase<FinishPostFileUploadInput, ClaimedPostFileUpload | null> {
+export class FinishPostFileUploadUseCase implements UseCase<
+  FinishPostFileUploadInput,
+  ClaimedPostFileUpload | null
+> {
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly media: MediaService,

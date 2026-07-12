@@ -1,11 +1,11 @@
 export { AppError, type AppErrorInternalOptions, type AppErrorOptions } from './errors/app-error';
 export { AppErrorCode } from './errors/app-error-code';
 export {
-  type AppErrorExtensions,
   appErrorExtensionsSchema,
-  type FieldError,
   fieldErrorSchema,
   parseAppErrorExtensions,
+  type AppErrorExtensions,
+  type FieldError,
 } from './errors/field-error';
 export { isAppError } from './errors/is-app-error';
 export { isErrorLike } from './errors/is-error-like';
@@ -21,6 +21,10 @@ export {
   MediaMimeType,
   SUPPORTED_MEDIA_MIME_TYPE_VALUES,
 } from './file/constants/media-mime-type.constants';
+export {
+  POST_FILE_THUMBNAIL_SIZES,
+  type PostFileThumbnailSize,
+} from './file/constants/post-file-thumbnail.constants';
 export { supportedMediaMimeTypeSchema } from './file/schemas/supported-media-mime-type.schema';
 export {
   formatStorageCaption,
@@ -33,6 +37,8 @@ export {
 export {
   getMediaMimeTypeExtension,
   getMediaStorageKey,
+  getPostFileThumbnailStorageKey,
+  getPostFileThumbnailStorageKeys,
   isSupportedMediaMimeType,
   parseMediaMimeType,
 } from './file/util/media-mime-type.util';

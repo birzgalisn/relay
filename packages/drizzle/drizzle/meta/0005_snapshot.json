@@ -106,12 +106,8 @@
           "name": "post_file_post_id_post_id_fk",
           "tableFrom": "post_file",
           "tableTo": "post",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -121,9 +117,7 @@
         "post_file_tus_upload_id_unique": {
           "name": "post_file_tus_upload_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "tus_upload_id"
-          ]
+          "columns": ["tus_upload_id"]
         }
       },
       "policies": {},
@@ -219,21 +213,12 @@
     "public.post_file_upload_status": {
       "name": "post_file_upload_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "processing",
-        "ready",
-        "failed"
-      ]
+      "values": ["pending", "processing", "ready", "failed"]
     },
     "public.post_status": {
       "name": "post_status",
       "schema": "public",
-      "values": [
-        "publishing",
-        "published",
-        "moderated"
-      ]
+      "values": ["publishing", "published", "moderated"]
     }
   },
   "schemas": {},
